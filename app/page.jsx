@@ -411,7 +411,7 @@ export default function Home() {
         </motion.div>
       </AnimatePresence>
       <div className="h-screen bg-gray-950/95 flex items-center justify-center text-white">
-        <h2 className="text-4xl">After Scroll</h2>
+        <h2 className="text-4xl">Footer section </h2>
       </div>
     </>
   );
