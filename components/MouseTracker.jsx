@@ -32,7 +32,7 @@ export default function MouseTracker() {
   }, []);
 
   return (
-    <div className="pointer-events-none font-bold text-[0.25rem] md:text-xs font-quicksand fixed top-0 left-0 w-screen h-screen z-[999]  text-white">
+    <div className="pointer-events-none font-bold text-[0.25rem] md:text-xs font-quicksand fixed top-0 left-0 w-screen h-screen z-[9999]  text-white">
       <div className="absolute  left-0 top-8 z-20 text-xs text-white">
         <div
           className="text-black font-bold flex gap-4 md:px-1 py-1 -rotate-180"

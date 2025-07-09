@@ -29,12 +29,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="relative bg-[#b4aea7] h-screen w-screen overflow-hidden">
+      {/* 👇 REMOVE overflow-hidden, h-screen, and w-screen */}
+      <body className="relative bg-[#b4aea7]">
         <MouseTracker />
 
-        <div className="h-full w-full p-4 md:p-6">
-          {/* Centered content with equal margin on all sides */}
-          <main className="h-full w-full bg-white overflow-hidden">
+        <div className="h-full w-full p-6 z-20">
+          <main className="h-full w-full bg-[#b4aea7] ">
             {children}
           </main>
         </div>
@@ -42,3 +42,21 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
+
+// export default function RootLayout({ children }) {
+//   return (
+//     <html lang="en">
+//       <body className="relative bg-[#b4aea7] h-screen w-screen overflow-hidden">
+//         <MouseTracker />
+
+//         <div className="h-full w-full p-4 md:p-6">
+//           {/* Centered content with equal margin on all sides */}
+//           <main className="h-full w-full bg-white overflow-hidden">
+//             {children}
+//           </main>
+//         </div>
+//       </body>
+//     </html>
+//   );
+// }

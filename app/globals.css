@@ -9,6 +9,8 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+
+
 @layer base {
   * {
     @apply border-border;
@@ -122,30 +124,6 @@ html {
   animation: slideInRight 0.6s ease-out forwards;
 }
 
-.inverted-radius {
-  /* You can adjust these variables in the CSS directly,
-     or make them dynamic if needed via inline style,
-     but the mask calculation is fixed. */
-  --r: 20px; /* the radius */
-  --s: 20px; /* size of inner curve */
-  --x: 20px; /* horizontal offset (no percentage) */
-  --y: 10px; /* vertical offset (no percentage) */
-
-  --_m:/calc(2*var(--r)) calc(2*var(--r)) radial-gradient(#000 70%,#0000 90%);
-  --_g:conic-gradient(at calc(100% - var(--r)) var(--r),#0000 25%,#000 0);
-  --_d:(var(--s) + var(--r));
-  mask:
-    /* Top-left corner inverted curve */
-    calc(100% - var(--_d) - var(--x)) 0 var(--_m),
-    /* Bottom-right corner inverted curve (this seems to be where your original CSS applies it) */
-    100% calc(var(--_d) + var(--y)) var(--_m),
-    /* Additional mask elements for other corners or complex cutouts */
-    radial-gradient(var(--s) at 100% 0,#0000 99%,#000 calc(100% + 1px))
-      calc(-1*var(--r) - var(--x)) calc(var(--r) + var(--y)),
-    var(--_g) calc(-1*var(--_d) - var(--x)) 0,
-    var(--_g) 0 calc(var(--_d) + var(--y));
-  mask-repeat: no-repeat;
-}
 
 /* For WebKit browsers (Chrome, Safari, Edge, Opera) */
 ::-webkit-scrollbar {
@@ -154,21 +132,6 @@ html {
   height: 0;     /* For horizontal scrollbars */
 }
 
-/* For Firefox (non-WebKit) */
-/* Note: Firefox uses a different property for hiding scrollbars,
-   or you can use 'scrollbar-width: none;' for a more modern approach. */
-/*
-html {
-  scrollbar-width: none;
-}
-*/
-
-/* For Internet Explorer and Edge (legacy) */
-/*
-body {
-  -ms-overflow-style: none;
-}
-*/
 
 
 .my-menu-button:hover .menu-line-1 {
@@ -191,4 +154,36 @@ body {
 }
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
+}
+
+
+.scroll-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+.scroll-section {
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  scroll-snap-align: start;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5); /* dark overlay */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  text-align: center;
+  padding: 2rem;
 }
