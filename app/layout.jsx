@@ -29,12 +29,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      {/* 👇 REMOVE overflow-hidden, h-screen, and w-screen */}
+     
       <body className="relative bg-[#b4aea7]">
         <MouseTracker />
 
-        <div className="h-full w-full p-6 z-20">
-          <main className="h-full w-full bg-[#b4aea7] ">
+        <div className="h-full w-full p-6">
+          <main className="h-full w-full bg-white ">
             {children}
           </main>
         </div>
