@@ -31,7 +31,7 @@ export default function MouseTracker() {
   }, []);
 
   return (
-    <div className="pointer-events-none font-bold text-[0.25rem] md:text-xs font-quicksand fixed top-0 left-0 w-screen h-screen z-[999]  text-white">
+    <div className="pointer-events-none font-bold z-[101] text-[0.25rem] md:text-xs font-quicksand fixed top-0 left-0 w-screen h-screen  text-white">
       <div className="absolute  left-0 top-8 z-20 bg-[#b4aea7] text-xs text-white">
         <div
           className="text-black font-bold flex gap-4 md:px-1 py-1 -rotate-180"
@@ -86,11 +86,11 @@ export default function MouseTracker() {
       <div className="absolute right-6 top-1/2 h-[0.1rem] w-1 bg-[#000000]" />
 
       {/* x,y pos at top */}
-      <div   className="absolute w-full h-6 bg-[#b4aea7] top-0  text-black ">
+      <div   className="absolute  w-full h-6 bg-[#b4aea7] top-0  text-black ">
 
      
       <div
-        className="absolute top-0 text-black "
+        className="absolute top-0  text-black "
         style={{ left: `${mousePos.x - 12}px` }}
       >
         {mousePos.x - screenSize.height}

@@ -1,8 +1,8 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Lenis from "@studio-freight/lenis";
 
 const projects = [
   {
@@ -93,12 +93,60 @@ export default function VerticalProjectScroll() {
   const [currentSlide, setCurrentSlide] = useState(1);
   const [viewMode, setViewMode] = useState(1);
   const clones = [...projects, ...projects, ...projects];
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+  const [isHoveringNav, setIsHoveringNav] = useState(false);
+
+  const [activeHoverIndex, setActiveHoverIndex] = useState(null);
+  const isCursorLarge = activeHoverIndex !== null;
+  const cursorSize = isCursorLarge ? "w-16 h-16" : "w-3 h-3";
+
+  // console.log(isHovered)
+
+  useEffect(() => {
+    const updateSize = () => {
+      setScreenSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    const updateMouse = (e) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("resize", updateSize);
+    window.addEventListener("mousemove", updateMouse);
+    updateSize();
+
+    return () => {
+      window.removeEventListener("resize", updateSize);
+      window.removeEventListener("mousemove", updateMouse);
+    };
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
     const slideCount = projects.length;
     const cloneHeight = container.scrollHeight / 3;
     let ticking = false;
+
+    // Set up Lenis instance for smooth scrolling
+    const lenis = new Lenis({
+      wrapper: container,
+      content: container.firstChild,
+      smooth: true,
+      direction: "vertical",
+      gestureDirection: "vertical",
+      wheelMultiplier: 1.2,
+      touchMultiplier: 1.5,
+    });
+
+    const raf = (time) => {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    };
+    requestAnimationFrame(raf);
 
     const setInitialScroll = () => {
       container.scrollTop = cloneHeight;
@@ -138,22 +186,126 @@ export default function VerticalProjectScroll() {
 
     setInitialScroll();
     container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      lenis.destroy();
+    };
   }, []);
 
   return (
-    <div className=" w-full h-screen bg-white ">
-      <div className="absolute   justify-between  w-[15%] top-1/2 -translate-y-1/2 right-16 z-20 flex gap-2 items-center text-sm font-mono">
+    <div className="relative w-full h-screen bg-white">
+      {/* left section */}
+      <div className="absolute h-full  left-0 top-0  bg-[#b4aea7] text-xs text-white">
+        <div
+          className=" mt-8  text-black font-bold flex gap-4 md:px-1 py-1 -rotate-180"
+          style={{ writingMode: "vertical-lr" }}
+        >
+          <p>
+            <span className="border text-[8px] py-1 md:py-1 md:px-[0.15rem] rounded-full">
+              H
+            </span>{" "}
+            {screenSize.height}
+          </p>
+          <p>
+            <span className="border text-[8px] py-1 md:py-1 md:px-[0.15rem] rounded-full">
+              Y
+            </span>{" "}
+            {mousePos.y}
+          </p>
+        </div>
+      </div>
+
+      <div
+        className="absolute left-0 top-[50%] -translate-y-1/2 text-center font-bold text-xs text-black -rotate-180"
+        style={{ writingMode: "vertical-lr" }}
+      >
+        {screenSize.height / 2}{" "}
+      </div>
+
+      {/* Top section  */}
+      <div className="absolute  w-full h-6 bg-[#b4aea7] top-0  text-black ">
+        <div
+          className="absolute top-0 z-[101] font-bold text-xs  text-black "
+          style={{ left: `${mousePos.x - 12}px` }}
+        >
+          {mousePos.x - screenSize.height}
+        </div>
+      </div>
+
+      {/* right section */}
+
+      <div className="absolute  h-full w-6 bg-[#b4aea7] top-0  right-0  text-black ">
+        <div
+          className="absolute font-bold text-xs right-0 text-black "
+          style={{ top: `${mousePos.y - 12}px`, writingMode: "vertical-lr" }}
+        >
+          {screenSize.height - mousePos.y * 2}
+        </div>
+      </div>
+      {/* bottom section  */}
+
+      <div className="absolute bg-[#b4aea7] w-full  right-6 font-bold bottom-0  text-xs text-white">
+        <div className="text-black flex justify-end gap-4 md:px-2 md:py-1 ">
+          <p>
+            <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">
+              X
+            </span>
+            {mousePos.x}
+          </p>
+          <p>
+            <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">
+              W
+            </span>
+            {screenSize.width}
+          </p>
+          <div className="absolute bottom-0 left-[48.5%] z-[101] text-center  text-black ">
+            {screenSize.width / 2}{" "}
+          </div>
+        </div>
+      </div>
+
+      {/* Vertical line */}
+      <div
+        className="pointer-events-none absolute z-[101] top-0 bottom-0 w-px bg-[#999692]/50"
+        style={{ left: `${mousePos.x}px` }}
+      />
+
+      <div
+        className="pointer-events-none absolute z-[101] left-0 right-0 h-px bg-[#999692]/50"
+        style={{ top: `${mousePos.y}px` }}
+      />
+
+      {/* Custom Cursor */}
+      <div
+        className={`absolute ${cursorSize} z-[101] transition-all ease-in-out pointer-events-none`}
+        style={{
+          top: mousePos.y - (isCursorLarge ? 32 : 6),
+          left: mousePos.x - (isCursorLarge ? 32 : 6),
+        }}
+      >
+        <div
+          className={`relative w-full h-full transition-transform duration-300 ${
+            isCursorLarge ? "rotate-45 scale-150" : "rotate-0 scale-100"
+          }`}
+        >
+          <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-white opacity-80" />
+          <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white opacity-80" />
+        </div>
+      </div>
+
+      <div className="absolute justify-between w-[15%] top-1/2 -translate-y-1/2 right-16 z-20 flex gap-2 items-center text-sm font-mono">
         <p>/ {String(projects.length).padStart(3, "0")}</p>
         <div className="space-x-1">
           <button
             onClick={() => setViewMode(1)}
-             className={`px-2 py-1  rounded-full space-x-1 transition-all duration-700 ${
-                viewMode === 1 ?`font-bold`:`font-normal`}`}
+            className={`px-2 py-1 rounded-full space-x-1 transition-all duration-700 ${
+              viewMode === 1 ? `font-bold` : `font-normal`
+            }`}
           >
             <span>VIEW</span>
             <span
-              className={` p-1 text-xs px-2 rounded-full transition-all duration-700 ${
+              className={`p-1 text-xs px-2 rounded-full transition-all duration-700 ${
                 viewMode === 1 ? "bg-black text-white" : "bg-white text-black"
               }`}
             >
@@ -162,12 +314,13 @@ export default function VerticalProjectScroll() {
           </button>
           <button
             onClick={() => setViewMode(2)}
-            className={`px-2 py-1  rounded-full space-x-1 transition-all duration-700 ${
-                viewMode === 2 ?`font-bold`:`font-normal`}`}
+            className={`px-2 py-1 rounded-full space-x-1 transition-all duration-700 ${
+              viewMode === 2 ? `font-bold` : `font-normal`
+            }`}
           >
             <span>VIEW</span>
             <span
-              className={` p-1 text-xs px-2 rounded-full transition-all duration-700 ${
+              className={`p-1 text-xs px-2 rounded-full transition-all duration-700 ${
                 viewMode === 2 ? "bg-black text-white" : "bg-white text-black"
               }`}
             >
@@ -177,36 +330,62 @@ export default function VerticalProjectScroll() {
         </div>
       </div>
 
-      <div className="absolute top-1/2 left-4 -translate-y-1/2 text-xs font-mono">
+      <div className="absolute top-1/2 left-6 -translate-y-1/2 text-xs font-bold font-mono">
+        [projects]
+      </div>
+
+      <div className="absolute top-1/2 left-[15%] -translate-y-1/2 text-xs font-mono">
         {String(currentSlide).padStart(3, "0")}
       </div>
 
+      {/* main center div  */}
+
       <div
         ref={containerRef}
-        className={`absolute left-1/2 top-0 -translate-x-1/2 z-[99999] ${
-          viewMode === 2 ? `w-3/12` : `w-6/12`
+        className={`relative w-full mx-auto  z-[100] ${
+          viewMode === 2 ? `w-2/12` : `w-7/12`
         } h-full overflow-y-scroll transition-all duration-700 ease-out space-y-4 pb-10 scrollbar-hide`}
       >
-        {clones.map((proj, i) => (
-          <motion.div
-            key={i}
-            initial={{ scale: 1 }}
-            animate={{ scale: viewMode === 2 ? 1 : 1 }}
-            transition={{ duration: 0.4 }}
-            className="relative  w-full  overflow-hidden rounded-lg shadow-lg cursor-pointer"
-          >
-            <Image
-              src={proj.image}
-              alt={proj.title}
-              width={500}
-              height={300}
-              className={`w-full object-cover ${viewMode==2?` h-[150px]`:` h-[500px]`}`}
-            />
-            <div className="absolute top-2 left-2 bg-black/40 rounded-xl text-white text-xs px-3 py-1 ">
-              {proj.title}
-            </div>
-          </motion.div>
-        ))}
+        <div className="space-y-4">
+          {clones.map((proj, i) => (
+            <motion.div
+              key={i}
+              initial={{ scale: 1 }}
+              animate={{ scale: viewMode === 2 ? 1 : 1 }}
+              transition={{ duration: 0.4 }}
+              onMouseEnter={() => setActiveHoverIndex(i)}
+              onMouseLeave={() => setActiveHoverIndex(null)}
+              className="relative w-full overflow-hidden rounded-lg shadow-lg cursor-pointer"
+            >
+              <Image
+                src={proj.image}
+                alt={proj.title}
+                width={500}
+                height={300}
+                className={`w-full object-cover ${
+                  viewMode == 2 ? `h-[150px]` : `h-[500px]`
+                }`}
+              />
+              <div className="font-quicksand absolute w-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center  items-center text-center flex-col md:flex-row text-white text-xs space-x-2 p-2 rounded-lg">
+                <p
+                  className={`${
+                    (viewMode == 2) ? `w-full text-[10px]`:`w-auto text-xs`
+                  } bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl`}
+                >
+                  {proj.title}
+                </p>
+                <div className={`flex ${viewMode == 2 ? `hidden ` : `block`}`}>
+                  <p className=" bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl ">
+                    {proj.type}
+                  </p>
+                  <p className=" bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl">
+                    {proj.impact}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       <div className="absolute right-[20%] -translate-x-1/2 top-8 h-[8rem] w-[2px] bg-gray-300">
@@ -218,7 +397,6 @@ export default function VerticalProjectScroll() {
     </div>
   );
 }
-
 
 // "use client";
 // import { useEffect, useRef, useState } from "react";

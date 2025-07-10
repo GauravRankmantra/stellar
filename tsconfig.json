@@ -28,6 +28,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-, "app/careers/page.jsx", "app/contact/page.jsx", "app/about/page.jsx", "app/gallery/page.jsx", "app/services/page.jsx", "app/page.jsx", "app/layout.jsx", "components/Footer.jsx", "components/Navigation.jsx", "tailwind.config.js"  ],
+, "app/careers/page.jsx", "app/contact/page.jsx", "app/about/page.jsx", "app/gallery/page.jsx", "app/services/page.jsx", "app/page.jsx", "app/layout.jsx", "components/Footer.jsx", "components/Navigation.jsx", "tailwind.config.js", "components/HorizontalScroll.jsx"  ],
   "exclude": ["node_modules"]
 }
