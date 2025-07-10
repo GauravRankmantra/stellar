@@ -6,6 +6,26 @@ import HorizontalScroll from "@/components/HorizontalScroll";
 export default function HomePage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+  const [isHoveringNav, setIsHoveringNav] = useState(false);
+  const cursorOffset = isHoveringNav ? 40 : 6;
+  useEffect(() => {
+    const handleHover = (e) => {
+      const tag = e.target.tagName.toLowerCase();
+      if (tag === "a" || tag === "button" || tag === "span") {
+        setIsHoveringNav(true);
+      } else {
+        setIsHoveringNav(false);
+      }
+    };
+
+    window.addEventListener("mouseover", handleHover);
+    window.addEventListener("mouseout", handleHover);
+
+    return () => {
+      window.removeEventListener("mouseover", handleHover);
+      window.removeEventListener("mouseout", handleHover);
+    };
+  }, []);
 
   useEffect(() => {
     const updateSize = () => {
@@ -33,16 +53,21 @@ export default function HomePage() {
     <>
       <div className="fixed h-full left-0 top-0 z-[100] bg-[#b4aea7] text-xs text-white">
         <div
-          className="mt-8 text-black font-bold flex gap-4 md:px-1 py-1 -rotate-180"
+          className="mt-8 text-black  font-bold flex gap-4 md:px-1 py-1 -rotate-180"
           style={{ writingMode: "vertical-lr" }}
         >
+
           <p>
-            <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">H</span>{" "}
-            {screenSize.height}
-          </p>
-          <p>
-            <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">Y</span>{" "}
+            <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">
+              Y
+            </span>{" "}
             {mousePos.y}
+          </p>
+                    <p>
+            <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">
+              H
+            </span>{" "}
+            {screenSize.height}
           </p>
         </div>
       </div>
@@ -72,14 +97,18 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="fixed bg-[#b4aea7] w-full bottom-0 right-0 z-[100] font-bold text-xs text-white">
+      <div className="fixed bg-[#b4aea7] w-full bottom-0 right-6 z-[100] font-bold text-xs text-white">
         <div className="text-black flex justify-end gap-4 md:px-2 md:py-1">
           <p>
-            <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">X</span>
+            <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">
+              X
+            </span>
             {mousePos.x}
           </p>
           <p>
-            <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">W</span>
+            <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">
+              W
+            </span>
             {screenSize.width}
           </p>
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-[101] text-center text-black">
@@ -96,6 +125,30 @@ export default function HomePage() {
         className="pointer-events-none fixed z-[101] left-0 right-0 h-px bg-[#999692]/50"
         style={{ top: `${mousePos.y}px` }}
       />
+
+      <div
+        className={`pointer-events-none fixed z-[105] ${
+          isHoveringNav ? `w-20 h-20` : `w-3 h-3`
+        } transition-transform duration-75 ease-out`}
+        style={{
+          transform: `translate(${mousePos.x - cursorOffset}px, ${
+            mousePos.y - cursorOffset
+          }px) rotate(${isHoveringNav ? 45 : 0}deg)`,
+        }}
+      >
+        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white opacity-70" />
+        <div className="absolute top-1/2 left-0 right-0 h-px bg-white opacity-70" />
+      </div>
+
+      <div
+        className="fixed z-[102] text-xs px-2 py-1 rounded bg-black/80 text-white pointer-events-none transition-transform duration-75 ease-out"
+        style={{
+          top: `${mousePos.y - 30}px`, // 35px above cursor
+          left: `${mousePos.x}px`, // Center horizontally (assuming ~80px width)
+        }}
+      >
+        Open Project
+      </div>
 
       <HorizontalScroll />
     </>

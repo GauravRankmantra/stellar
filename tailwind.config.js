@@ -11,6 +11,8 @@ const config = {
       fontFamily: {
         quicksand: ['Quicksand', 'sans-serif'],
         montserrat: ['Montserrat', 'sans-serif'],
+        gilroy: ['"Gilroy ExtraBold"', 'sans-serif']
+
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
