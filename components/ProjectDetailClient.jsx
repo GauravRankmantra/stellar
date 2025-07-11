@@ -16,12 +16,13 @@ const ProjectDetailClient = ({ project, nextProject }) => {
   const [isHoveringNav, setIsHoveringNav] = useState(false);
   const cursorOffset = isHoveringNav ? 40 : 6;
 
-  const imageSizes = useMemo(() => {
-    // SSR guard
-    if (typeof window === "undefined") return [];
+  const [imageSizes, setImageSizes] = useState([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
     const maxHeight = window.innerHeight - 50;
-    return project.gallery.map(() => {
+    const sizes = project.gallery.map(() => {
       const width = Math.floor(Math.random() * (1000 - 600 + 1)) + 600;
       const minHeight = 500;
       const height =
@@ -29,6 +30,8 @@ const ProjectDetailClient = ({ project, nextProject }) => {
 
       return { width, height };
     });
+
+    setImageSizes(sizes);
   }, [project.gallery]);
 
   const metaVariants = {
@@ -264,20 +267,23 @@ const ProjectDetailClient = ({ project, nextProject }) => {
             ))}
           </div>
           {/* second with some images  */}
-          <div className="flex items-center gap-10">
-            {project.gallery.map((image, index) => {
-              const { width, height } = imageSizes[index];
-              return (
-                <img
-                  key={index}
-                  className="object-cover"
-                  src={image}
-                  alt={`Gallery image ${index + 1}`}
-                  style={{ width: `${width}px`, height: `${height}px` }}
-                />
-              );
-            })}
-          </div>
+          {imageSizes.length === project.gallery?.length && (
+            <div className="flex items-center gap-10">
+              {project.gallery.map((image, index) => {
+                const { width, height } = imageSizes[index];
+                return (
+                  <img
+                    key={index}
+                    className="object-cover"
+                    src={image}
+                    alt={`Gallery image ${index + 1}`}
+                    style={{ width: `${width}px`, height: `${height}px` }}
+                  />
+                );
+              })}
+            </div>
+          )}
+
           {/* next projec */}
           <div className="ml-6 relative">
             <img
