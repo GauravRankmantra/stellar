@@ -143,7 +143,13 @@ function Slide({ slide }) {
       }
     }, ref);
 
-    return () => ctx.revert();
+    return () => {
+      try {
+        ctx.revert();
+      } catch (e) {
+        console.warn("GSAP context cleanup failed:", e);
+      }
+    };
   }, []);
 
   return (
@@ -304,66 +310,70 @@ export default function HorizontalScroll() {
           scroller: window,
           onUpdate: (self) => {
             const atOrPastEnd = self.progress >= 2;
-    
-       
+
             setShowNav(!atOrPastEnd);
-            console.log(showNav)
+            console.log(showNav);
           },
         },
       });
     }, containerRef);
 
-    return () => ctx.revert();
+    return () => {
+      try {
+        ctx.revert();
+      } catch (e) {
+        console.warn("GSAP context cleanup failed:", e);
+      }
+    };
   }, []);
 
-useEffect(() => {
-  if (!navRef.current || !footerRef.current) return;
+  useEffect(() => {
+    if (!navRef.current || !footerRef.current) return;
 
-  ScrollTrigger.matchMedia({
-    // Desktop
-    "(min-width: 768px)": () => {
-      ScrollTrigger.create({
-        trigger: footerRef.current,
-        start: "top bottom",
-        end: "top+=20% bottom",
-        scrub: true,
-        onUpdate: (self) => {
-          const p = self.progress;
-          gsap.set(navRef.current, {
-            y: p * 50,
-            opacity: 1 - p,
-          });
-        },
-        onLeave: () => setShowNav(false),
-        onEnterBack: () => setShowNav(true),
-      });
-    },
+    ScrollTrigger.matchMedia({
+      // Desktop
+      "(min-width: 768px)": () => {
+        ScrollTrigger.create({
+          trigger: footerRef.current,
+          start: "top bottom",
+          end: "top+=20% bottom",
+          scrub: true,
+          onUpdate: (self) => {
+            const p = self.progress;
+            gsap.set(navRef.current, {
+              y: p * 50,
+              opacity: 1 - p,
+            });
+          },
+          onLeave: () => setShowNav(false),
+          onEnterBack: () => setShowNav(true),
+        });
+      },
 
-    // Mobile
-    "(max-width: 767px)": () => {
-      ScrollTrigger.create({
-        trigger: footerRef.current,
-        start: "top bottom",
-        end: "top+=35% bottom", // longer fade for smaller screens
-        scrub: true,
-        onUpdate: (self) => {
-          const p = self.progress;
-          gsap.set(navRef.current, {
-            y: p * 40, // smaller vertical movement
-            opacity: 1 - p,
-          });
-        },
-        onLeave: () => setShowNav(false),
-        onEnterBack: () => setShowNav(true),
-      });
-    },
-  });
+      // Mobile
+      "(max-width: 767px)": () => {
+        ScrollTrigger.create({
+          trigger: footerRef.current,
+          start: "top bottom",
+          end: "top+=35% bottom", // longer fade for smaller screens
+          scrub: true,
+          onUpdate: (self) => {
+            const p = self.progress;
+            gsap.set(navRef.current, {
+              y: p * 40, // smaller vertical movement
+              opacity: 1 - p,
+            });
+          },
+          onLeave: () => setShowNav(false),
+          onEnterBack: () => setShowNav(true),
+        });
+      },
+    });
 
-  return () => {
-    ScrollTrigger.getAll().forEach(t => t.kill());
-  };
-}, []);
-
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -426,13 +436,10 @@ useEffect(() => {
 
   return (
     <>
-      <div
-        ref={containerRef}
-        className="relative  z-10 overflow-hidden"
-      >
+      <div ref={containerRef} className="relative  z-10 overflow-hidden">
         <div ref={wrapperRef} className="flex">
           {slides.map((s, i) => (
-            <Slide key={i} slide={s} />
+            <Slide key={s.title + s.location + i} slide={s} />
           ))}
         </div>
       </div>
@@ -450,7 +457,9 @@ useEffect(() => {
               width: 1000,
               transition: { duration: 0.5 },
             }}
-            ref={navRef}
+            ref={(el) => {
+              if (el) navRef.current = el;
+            }}
           >
             <div className="flex justify-between items-center px-4 py-3">
               <div>
@@ -560,6 +569,10 @@ useEffect(() => {
                       </a>
                       <Link
                         href="/projects"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.location.href = "/projects"; // hard reload
+                        }}
                         className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                         onMouseEnter={() => setIsHoveringNav(true)}
                         onMouseLeave={() => setIsHoveringNav(false)}

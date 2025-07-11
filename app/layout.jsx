@@ -31,16 +31,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="relative bg-[#b4aea7]">
         {/* <MouseTracker /> */}
-        <div className="h-full w-full z-20">
-          <main className="h-full w-full bg-[#b4aea7]">
-            {children}
-          </main>
-        </div>
+
+        <main className="h-full w-full bg-[#b4aea7]">{children}</main>
       </body>
     </html>
   );
 }
-
 
 // export default function RootLayout({ children }) {
 //   return (

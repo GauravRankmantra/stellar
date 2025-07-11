@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import HorizontalScroll from "@/components/HorizontalScroll";
+import Link from "next/link";
 
 export default function HomePage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -149,6 +150,7 @@ export default function HomePage() {
       >
         Open Project
       </div>
+
 
       <HorizontalScroll />
     </>
