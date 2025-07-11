@@ -17,10 +17,15 @@ const ProjectDetailClient = ({ project, nextProject }) => {
   const cursorOffset = isHoveringNav ? 40 : 6;
 
   const imageSizes = useMemo(() => {
-    const maxHeight = window.innerHeight - 50; // device height - 50px
+    // SSR guard
+    if (typeof window === "undefined") return [];
+
+    const maxHeight = window.innerHeight - 50;
     return project.gallery.map(() => {
       const width = Math.floor(Math.random() * (1000 - 600 + 1)) + 600;
-      const height = Math.floor(Math.random() * (maxHeight - 500 + 1)) + 500;
+      const minHeight = 500;
+      const height =
+        Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
 
       return { width, height };
     });
@@ -282,7 +287,10 @@ const ProjectDetailClient = ({ project, nextProject }) => {
             />
             <div className="absolute inset-0 bg-black/50"></div>
             <div className="absolute top-1/2 text-gray-300 font-mono text-sm">
-              <Link className="flex p-2 flex-col" href={`/projects/${nextProject.slug}`}>
+              <Link
+                className="flex p-2 flex-col"
+                href={`/projects/${nextProject.slug}`}
+              >
                 Next project:
                 <span className="text-white">{nextProject.title}</span>
               </Link>
