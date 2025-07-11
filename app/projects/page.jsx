@@ -6,6 +6,7 @@ import Lenis from "@studio-freight/lenis";
 import Link from "next/link";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { originalProjects } from "@/public/data/projects";
+import { useRouter } from "next/navigation";
 
 const projects = [
   ...originalProjects,
@@ -24,6 +25,9 @@ const typeFilters = ["Commercial", "Residential", "Social Impact"];
 const progressFilters = ["Completed", "Active Build", "Design/Planning"];
 
 export default function VerticalProjectScroll() {
+  const router = useRouter();
+  const [isLeaving, setIsLeaving] = useState(false);
+
   const containerRef = useRef(null);
   const progressBarRef = useRef(null);
   const [closedMenuWidth, setClosedMenuWidth] = useState(getClosedMenuWidth());
@@ -38,6 +42,8 @@ export default function VerticalProjectScroll() {
   const [activeHoverIndex, setActiveHoverIndex] = useState(null);
   const isCursorLarge = activeHoverIndex !== null;
   const cursorSize = isCursorLarge ? "w-16 h-16" : "w-3 h-3";
+
+  const cursorOffset = isHoveringNav ? 40 : 6;
 
   const contentRef = useRef(null);
 
@@ -95,6 +101,25 @@ export default function VerticalProjectScroll() {
     return () => {
       window.removeEventListener("resize", updateSize);
       window.removeEventListener("mousemove", updateMouse);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleHover = (e) => {
+      const tag = e.target.tagName.toLowerCase();
+      if (tag === "a" || tag === "button" || tag === "img") {
+        setIsHoveringNav(true);
+      } else {
+        setIsHoveringNav(false);
+      }
+    };
+
+    window.addEventListener("mouseover", handleHover);
+    window.addEventListener("mouseout", handleHover);
+
+    return () => {
+      window.removeEventListener("mouseover", handleHover);
+      window.removeEventListener("mouseout", handleHover);
     };
   }, []);
 
@@ -296,21 +321,26 @@ export default function VerticalProjectScroll() {
       />
 
       {/* Custom Cursor */}
+      {/* Custom Cursor */}
       <div
-        className={`absolute ${cursorSize} z-[101] transition-all ease-in-out pointer-events-none`}
+        id="custom-cursor"
+        className={`pointer-events-none fixed z-[105] ${
+          isHoveringNav ? `w-20 h-20` : `w-3 h-3`
+        } transition-transform duration-75 ease-out`}
         style={{
-          top: mousePos.y - (isCursorLarge ? 32 : 6),
-          left: mousePos.x - (isCursorLarge ? 32 : 6),
+          transform: `translate(${mousePos.x - cursorOffset}px, ${
+            mousePos.y - cursorOffset
+          }px) rotate(${isHoveringNav ? 45 : 0}deg)`,
         }}
       >
-        <div
-          className={`relative w-full h-full transition-transform duration-300 ${
-            isCursorLarge ? "rotate-45 scale-150" : "rotate-0 scale-100"
-          }`}
-        >
-          <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-white opacity-80" />
-          <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white opacity-80" />
-        </div>
+        {/* Top line */}
+        <div className="absolute top-0 left-1/2 w-px h-1/2 bg-gray-100 opacity-70" />
+        {/* Bottom line */}
+        <div className="absolute bottom-0 left-1/2 w-px h-1/2 bg-gray-100 opacity-70" />
+        {/* Left line */}
+        <div className="absolute left-0 top-1/2 h-px w-1/2 bg-gray-100 opacity-70" />
+        {/* Right line */}
+        <div className="absolute right-0 top-1/2 h-px w-1/2 bg-gray-100 opacity-70" />
       </div>
 
       <div className="absolute justify-between w-[15%] top-1/2 -translate-y-1/2 right-16 z-20 flex gap-2 items-center text-sm font-mono">
@@ -359,54 +389,65 @@ export default function VerticalProjectScroll() {
 
       {/* main center div  */}
 
+      {isLeaving && (
+        <motion.div
+          className="fixed inset-0 z-[999] bg-[#211d1d]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        />
+      )}
+
       <div
         ref={containerRef}
         className={`relative  mx-auto  z-[100] ${
           viewMode === 2 ? `w-2/12` : `w-7/12`
         } h-full overflow-y-scroll transition-all duration-700 ease-out space-y-4 pb-10 scrollbar-hide`}
       >
-        <div ref={contentRef} className="space-y-10">
+        <div ref={contentRef} className="flex flex-col gap-6">
           {clones.map((proj, i) => (
-            <Link    key={`${proj.title}-${i}`} href={`/projects/${proj.slug}`}>
-              <motion.div
-             
-                initial={{ scale: 1 }}
-                animate={{ scale: viewMode === 2 ? 1 : 1 }}
-                transition={{ duration: 0.4 }}
-                onMouseEnter={() => setActiveHoverIndex(i)}
-                onMouseLeave={() => setActiveHoverIndex(null)}
-                className="relative w-full overflow-hidden rounded-lg shadow-lg cursor-pointer"
-              >
-                <Image
-                  src={proj.image}
-                  alt={proj.title}
-                  width={500}
-                  height={300}
-                  className={`w-full object-cover ${
-                    viewMode == 2 ? `h-[150px]` : `h-[500px]`
-                  }`}
-                />
-                <div className="font-quicksand absolute w-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center  items-center text-center flex-col md:flex-row text-white text-xs space-x-2 p-2 rounded-lg">
-                  <p
-                    className={`${
-                      viewMode == 2 ? `w-full text-[10px]` : `w-auto text-xs`
-                    } bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl`}
-                  >
-                    {proj.title}
+            <motion.div
+              key={proj.slug+i}
+              initial={{ scale: 1 }}
+              animate={{ scale: viewMode === 2 ? 1 : 1 }}
+              transition={{ duration: 0.4 }}
+              onClick={() => {
+                setIsLeaving(true);
+                setTimeout(() => {
+                  router.push(`/projects/${proj.slug}`);
+                }, 500); // Delay must match animation duration
+              }}
+              onMouseEnter={() => setActiveHoverIndex(i)}
+              onMouseLeave={() => setActiveHoverIndex(null)}
+              className="relative w-full overflow-hidden rounded-lg shadow-lg cursor-pointer"
+            >
+              <Image
+                src={proj.image}
+                alt={proj.title}
+                width={500}
+                height={300}
+                className={`w-full object-cover ${
+                  viewMode == 2 ? `h-[150px]` : `h-[500px]`
+                }`}
+              />
+              <div className="font-quicksand absolute w-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center  items-center text-center flex-col md:flex-row text-white text-xs space-x-2 p-2 rounded-lg">
+                <p
+                  className={`${
+                    viewMode == 2 ? `w-full text-[10px]` : `w-auto text-xs`
+                  } bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl`}
+                >
+                  {proj.title}
+                </p>
+                <div className={`flex ${viewMode == 2 ? `hidden ` : `block`}`}>
+                  <p className=" bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl ">
+                    {proj.type}
                   </p>
-                  <div
-                    className={`flex ${viewMode == 2 ? `hidden ` : `block`}`}
-                  >
-                    <p className=" bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl ">
-                      {proj.type}
-                    </p>
-                    <p className=" bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl">
-                      {proj.impact}
-                    </p>
-                  </div>
+                  <p className=" bg-gray-700/20 backdrop-blur-md px-2 py-1 rounded-2xl">
+                    {proj.impact}
+                  </p>
                 </div>
-              </motion.div>
-            </Link>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>

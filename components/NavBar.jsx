@@ -229,7 +229,7 @@ export default function Navbar() {
                   {/* Navigation Links */}
                   <nav className="text-xl md:text-5xl gap-[5rem] font-montserrat grid grid-cols-2 items-center md:gap-[15rem] font-bold z-10">
                     <a
-                      href="#"
+                      href="/"
                       className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                       onMouseEnter={() => setIsHoveringNav(true)}
                       onMouseLeave={() => setIsHoveringNav(false)}

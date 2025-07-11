@@ -4,10 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import Lenis from "@studio-freight/lenis";
 import NavBar from "./NavBar";
 import MarqueeText from "./MarqueeText";
-import { motion, useAnimation, useInView } from "framer-motion";
+import {
+  motion,
+  useAnimation,
+  useInView,
+  AnimatePresence,
+} from "framer-motion";
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 const ProjectDetailClient = ({ project, nextProject }) => {
   const containerRef = useRef(null);
 
@@ -18,6 +24,19 @@ const ProjectDetailClient = ({ project, nextProject }) => {
 
   const [imageSizes, setImageSizes] = useState([]);
 
+  const [isEntering, setIsEntering] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsEntering(false), 600); // match animation duration
+    return () => clearTimeout(timeout);
+  }, []);
+  const handleNavigate = (path) => {
+    router.push(path);
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 200);
+  };
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -107,6 +126,16 @@ const ProjectDetailClient = ({ project, nextProject }) => {
 
   return (
     <div ref={containerRef} className="flex relative h-screen w-max">
+      {isEntering && (
+        <motion.div
+          className="fixed inset-0 z-[999] bg-[#211d1d]"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+      )}
+
       {/* Intro full-screen section */}
       <section
         className="h-screen  w-screen bg-cover bg-center flex items-center justify-center text-white text-5xl font-bold shrink-0"
@@ -293,13 +322,13 @@ const ProjectDetailClient = ({ project, nextProject }) => {
             />
             <div className="absolute inset-0 bg-black/50"></div>
             <div className="absolute top-1/2 text-gray-300 font-mono text-sm">
-              <Link
-                className="flex p-2 flex-col"
-                href={`/projects/${nextProject.slug}`}
+              <div
+                className="flex p-2 flex-col cursor-pointer"
+                onClick={() => handleNavigate(`/projects/${nextProject.slug}`)}
               >
                 Next project:
                 <span className="text-white">{nextProject.title}</span>
-              </Link>
+              </div>
             </div>
           </div>
         </div>

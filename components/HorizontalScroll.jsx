@@ -201,7 +201,7 @@ function Slide({ slide }) {
         </motion.div>
 
         <motion.div
-          className="slide-meta hidden lg:flex font-bold absolute top-1/2 left-12 -translate-x-1/2 -translate-y-1/2  gap-2 will-change-transform"
+          className="slide-meta hidden lg:flex font-bold absolute top-1/2 left-20 -translate-x-1/2 -translate-y-1/2  gap-2 will-change-transform"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
