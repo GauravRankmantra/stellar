@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 
 // Constants
 const MOBILE_BREAKPOINT = 768;
-const CLONE_COUNT = 3;
 const CURSOR_OFFSET_DEFAULT = 6;
 const CURSOR_OFFSET_HOVER = 40;
 
@@ -85,22 +84,16 @@ const getProgressValue = (filter) => {
 // Main component
 export default function VerticalProjectScroll() {
   const router = useRouter();
-  
-  // Add performance monitoring
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    console.log('Component rendering:', Date.now());
-  }
-  
-  // State management
+
+  // State management - minimized state updates
   const [isLeaving, setIsLeaving] = useState(false);
   const [closedMenuWidth, setClosedMenuWidth] = useState(getClosedMenuWidth());
-  const [currentSlide, setCurrentSlide] = useState(1);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [viewMode, setViewMode] = useState(1);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
   const [isHoveringNav, setIsHoveringNav] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [activeHoverIndex, setActiveHoverIndex] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [selectedProgressFilters, setSelectedProgressFilters] = useState([]);
 
@@ -110,44 +103,48 @@ export default function VerticalProjectScroll() {
   const contentRef = useRef(null);
   const lenisRef = useRef(null);
   const rafRef = useRef(null);
+  const scrollAnimationRef = useRef(null);
+  const lastScrollTime = useRef(0);
+  const currentScrollTop = useRef(0);
 
-  // Memoized values
+  // Memoized values - optimized filtering
   const originalProjectsCount = useMemo(() => originalProjects.length, []);
-  
-  const projects = useMemo(() => {
-    const clonedProjects = [];
-    for (let i = 0; i < CLONE_COUNT; i++) {
-      clonedProjects.push(...originalProjects);
-    }
-    return clonedProjects;
-  }, []);
 
   const selectedProgressValues = useMemo(() => {
-    return [...new Set(selectedProgressFilters.map(getProgressValue).filter(Boolean))];
+    return [
+      ...new Set(selectedProgressFilters.map(getProgressValue).filter(Boolean)),
+    ];
   }, [selectedProgressFilters]);
 
   const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
-      const typeMatch = selectedTypes.length === 0 || 
-        selectedTypes.some((type) => 
+    return originalProjects.filter((project) => {
+      const typeMatch =
+        selectedTypes.length === 0 ||
+        selectedTypes.some((type) =>
           project.type.toLowerCase().includes(type.toLowerCase())
         );
-      const progressMatch = selectedProgressValues.length === 0 || 
+      const progressMatch =
+        selectedProgressValues.length === 0 ||
         selectedProgressValues.includes(project.progress);
       return typeMatch && progressMatch;
     });
-  }, [projects, selectedTypes, selectedProgressValues]);
+  }, [selectedTypes, selectedProgressValues]);
 
-  const clones = useMemo(() => {
-    const result = [];
-    for (let i = 0; i < CLONE_COUNT; i++) {
-      result.push(...filteredProjects);
-    }
-    return result;
+  // Create triple array for infinite scroll
+  const infiniteProjects = useMemo(() => {
+    const projects = [
+      ...filteredProjects,
+      ...filteredProjects,
+      ...filteredProjects,
+    ];
+    return projects;
   }, [filteredProjects]);
 
-  // Event handlers
+  // Event handlers - optimized with throttling
   const handleMouseMove = useCallback((e) => {
+    const now = Date.now();
+    if (now - lastScrollTime.current < 16) return; // 60fps throttle
+    lastScrollTime.current = now;
     setMousePos({ x: e.clientX, y: e.clientY });
   }, []);
 
@@ -165,31 +162,34 @@ export default function VerticalProjectScroll() {
     setIsHoveringNav(isInteractiveElement);
   }, []);
 
-  const handleProjectClick = useCallback((slug) => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      router.push(`/projects/${slug}`);
-    }, 500);
-  }, [router]);
+  const handleProjectClick = useCallback(
+    (slug) => {
+      setIsLeaving(true);
+      setTimeout(() => {
+        router.push(`/projects/${slug}`);
+      }, 500);
+    },
+    [router]
+  );
 
   const handleTypeFilterToggle = useCallback((filter) => {
-    setSelectedTypes(prev => 
-      prev.includes(filter) 
-        ? prev.filter(t => t !== filter)
+    setSelectedTypes((prev) =>
+      prev.includes(filter)
+        ? prev.filter((t) => t !== filter)
         : [...prev, filter]
     );
   }, []);
 
   const handleProgressFilterToggle = useCallback((filter) => {
-    setSelectedProgressFilters(prev => 
-      prev.includes(filter) 
-        ? prev.filter(f => f !== filter)
+    setSelectedProgressFilters((prev) =>
+      prev.includes(filter)
+        ? prev.filter((f) => f !== filter)
         : [...prev, filter]
     );
   }, []);
 
   const toggleMenu = useCallback(() => {
-    setIsOpen(prev => !prev);
+    setIsOpen((prev) => !prev);
   }, []);
 
   const handleViewModeChange = useCallback((mode) => {
@@ -199,117 +199,113 @@ export default function VerticalProjectScroll() {
   // Effects
   useEffect(() => {
     handleResize();
-    
-    // Throttle mouse move events
-    let mouseMoveTimeout;
-    const throttledMouseMove = (e) => {
-      if (mouseMoveTimeout) return;
-      mouseMoveTimeout = setTimeout(() => {
-        handleMouseMove(e);
-        mouseMoveTimeout = null;
-      }, 16); // ~60fps
-    };
 
     window.addEventListener("resize", handleResize);
-    window.addEventListener("mousemove", throttledMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseover", handleMouseOver);
     window.addEventListener("mouseout", handleMouseOver);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", throttledMouseMove);
+      window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseover", handleMouseOver);
       window.removeEventListener("mouseout", handleMouseOver);
-      if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
     };
   }, [handleResize, handleMouseMove, handleMouseOver]);
 
+  // Optimized scroll effect
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !infiniteProjects.length) return;
 
-    const slideCount = originalProjectsCount;
-    const cloneHeight = container.scrollHeight / CLONE_COUNT;
-    let ticking = false;
-    let lastScrollTime = 0;
+    const singleSetHeight = container.scrollHeight / 3; // Height of one set of projects
 
-    // Initialize Lenis with optimized settings
+    // Initialize Lenis
     const lenis = new Lenis({
       wrapper: container,
       content: contentRef.current,
       smooth: true,
       direction: "vertical",
       gestureDirection: "vertical",
-      wheelMultiplier: 0.8, // Reduced for better performance
-      touchMultiplier: 1.2,
-      smoothTouch: false, // Disable smooth touch for better mobile performance
+      wheelMultiplier: 1,
+      touchMultiplier: 1,
+      smoothTouch: false,
       normalizeWheel: true,
     });
 
     lenisRef.current = lenis;
 
-    // Optimized RAF loop
+    // Set initial scroll position to middle set
+
+    // Optimized scroll handler
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop;
+      currentScrollTop.current = scrollTop;
+
+      // Calculate and update progress bar immediately (not throttled)
+      const singleSetHeight = container.scrollHeight / 3;
+      const middleSetScrollTop = scrollTop - singleSetHeight;
+      const progress = Math.max(
+        0,
+        Math.min(100, (middleSetScrollTop / singleSetHeight) * 100)
+      );
+
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleY(${progress / 100})`;
+      }
+      const now = performance.now();
+      if (now - lastScrollTime.current < 16) return; // 60fps throttle
+      lastScrollTime.current = now;
+
+      if (scrollAnimationRef.current) {
+        cancelAnimationFrame(scrollAnimationRef.current);
+      }
+
+      scrollAnimationRef.current = requestAnimationFrame(() => {
+        const scrollTop = container.scrollTop;
+        currentScrollTop.current = scrollTop;
+
+        // Infinite scroll logic - seamless looping
+        if (scrollTop <= singleSetHeight * 0.1) {
+          // Near top, jump to bottom of middle set
+          container.scrollTop =
+            singleSetHeight * 2 - (singleSetHeight * 0.1 - scrollTop);
+        } else if (scrollTop >= singleSetHeight * 2.9) {
+          // Near bottom, jump to top of middle set
+          container.scrollTop =
+            singleSetHeight + (scrollTop - singleSetHeight * 2.9);
+        }
+
+        // Calculate current slide (only from middle set)
+        const middleSetScrollTop = scrollTop - singleSetHeight;
+        const itemHeight = singleSetHeight / filteredProjects.length;
+        const slideIndex = Math.max(
+          0,
+          Math.floor(middleSetScrollTop / itemHeight)
+        );
+        const currentSlideIndex = slideIndex % filteredProjects.length;
+
+        setCurrentSlide(currentSlideIndex);
+
+        // Update progress bar
+        const progress = Math.max(
+          0,
+          Math.min(100, (Math.abs(middleSetScrollTop) / singleSetHeight) * 100)
+        );
+        if (progressBarRef.current) {
+          progressBarRef.current.style.transform = `scaleY(${progress / 100})`;
+        }
+      });
+    };
+
+    // RAF loop for Lenis
     const raf = (time) => {
       lenis.raf(time);
       rafRef.current = requestAnimationFrame(raf);
     };
     rafRef.current = requestAnimationFrame(raf);
 
-    // Set initial scroll position
-    const setInitialScroll = () => {
-      container.scrollTop = cloneHeight;
-    };
-
-    // Highly optimized scroll handler
-    const handleScroll = () => {
-      const now = performance.now();
-      
-      // Throttle scroll events to 60fps max
-      if (now - lastScrollTime < 16) return;
-      lastScrollTime = now;
-
-      if (ticking) return;
-      
-      ticking = true;
-      
-      // Use requestAnimationFrame for smooth updates
-      requestAnimationFrame(() => {
-        const scrollTop = container.scrollTop;
-
-        // Infinite scroll logic (most critical part)
-        if (scrollTop <= 0) {
-          container.scrollTop = cloneHeight;
-        } else if (scrollTop >= cloneHeight * 2) {
-          container.scrollTop = cloneHeight;
-        }
-
-        // Batch DOM updates
-        const scrollOffset = container.scrollTop - cloneHeight;
-        const slideHeight = container.scrollHeight / clones.length;
-        const index = Math.floor(scrollOffset / slideHeight) % slideCount;
-        const newSlide = ((index + slideCount) % slideCount) + 1;
-        
-        // Only update if slide changed
-        if (newSlide !== currentSlide) {
-          setCurrentSlide(newSlide);
-        }
-
-        // Update progress bar efficiently
-        const progress = Math.min(Math.max((scrollOffset / cloneHeight) * 100, 0), 100);
-        if (progressBarRef.current) {
-          progressBarRef.current.style.transform = `scaleY(${progress / 100})`;
-          progressBarRef.current.style.transformOrigin = 'top';
-        }
-
-        ticking = false;
-      });
-    };
-
-    // Use passive event listener for better performance
-    const passiveScrollOptions = { passive: true };
-    
-    setInitialScroll();
-    container.addEventListener("scroll", handleScroll, passiveScrollOptions);
+    container.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       container.removeEventListener("scroll", handleScroll);
@@ -319,8 +315,11 @@ export default function VerticalProjectScroll() {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
+      if (scrollAnimationRef.current) {
+        cancelAnimationFrame(scrollAnimationRef.current);
+      }
     };
-  }, [clones.length, originalProjectsCount, currentSlide]);
+  }, [infiniteProjects.length, filteredProjects.length]);
 
   // Render methods
   const renderCoordinateDisplay = () => (
@@ -399,7 +398,9 @@ export default function VerticalProjectScroll() {
 
   const renderCursor = () => {
     const cursorSize = isHoveringNav ? 20 : 3;
-    const cursorOffset = isHoveringNav ? CURSOR_OFFSET_HOVER : CURSOR_OFFSET_DEFAULT;
+    const cursorOffset = isHoveringNav
+      ? CURSOR_OFFSET_HOVER
+      : CURSOR_OFFSET_DEFAULT;
 
     return (
       <div
@@ -423,7 +424,7 @@ export default function VerticalProjectScroll() {
 
   const renderViewControls = () => (
     <div className="absolute justify-between w-[15%] top-1/2 -translate-y-1/2 right-16 z-20 flex gap-2 items-center text-sm font-mono">
-      <p>/ {String(originalProjectsCount).padStart(3, "0")}</p>
+      <p>/ {String(filteredProjects.length).padStart(3, "0")}</p>
       <div className="space-x-1">
         {[1, 2].map((mode) => (
           <button
@@ -436,7 +437,9 @@ export default function VerticalProjectScroll() {
             <span>VIEW</span>
             <span
               className={`p-1 text-xs px-2 rounded-full transition-all duration-700 ${
-                viewMode === mode ? "bg-black text-white" : "bg-white text-black"
+                viewMode === mode
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
               }`}
             >
               {mode}
@@ -455,12 +458,9 @@ export default function VerticalProjectScroll() {
       } h-full overflow-y-scroll transition-all duration-700 ease-out space-y-4 pb-10 scrollbar-hide`}
     >
       <div ref={contentRef} className="flex flex-col gap-6">
-        {clones.map((proj, i) => {
-          // Calculate if image should be prioritized (first 3 images)
-          const isPriority = i < 3;
-          // Calculate if image is likely in viewport (rough estimation)
-          const isLikelyVisible = i < 10;
-          
+        {infiniteProjects.map((proj, i) => {
+          const isPriority = i < 6; // First 6 images
+
           return (
             <motion.div
               key={`${proj.slug}-${i}`}
@@ -468,8 +468,6 @@ export default function VerticalProjectScroll() {
               animate={{ scale: 1 }}
               transition={{ duration: 0.4 }}
               onClick={() => handleProjectClick(proj.slug)}
-              onMouseEnter={() => setActiveHoverIndex(i)}
-              onMouseLeave={() => setActiveHoverIndex(null)}
               className="relative w-full overflow-hidden rounded-lg shadow-lg cursor-pointer will-change-transform"
             >
               <Image
@@ -481,13 +479,13 @@ export default function VerticalProjectScroll() {
                   viewMode === 2 ? "h-[150px]" : "h-[500px]"
                 }`}
                 priority={isPriority}
-                quality={viewMode === 2 ? 60 : 75} // Lower quality for smaller images
+                quality={viewMode === 2 ? 60 : 75}
                 loading={isPriority ? "eager" : "lazy"}
                 placeholder="blur"
                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R7/2Q=="
                 sizes={viewMode === 2 ? "200px" : "500px"}
                 style={{
-                  transform: 'translateZ(0)', // Force GPU acceleration
+                  transform: "translateZ(0)",
                 }}
               />
               <div className="font-quicksand absolute w-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center text-center flex-col md:flex-row text-white text-xs space-x-2 p-2 rounded-lg">
@@ -541,7 +539,7 @@ export default function VerticalProjectScroll() {
               LAB
             </h1>
           </div>
-          
+
           <div className="flex flex-wrap gap-2 p-2 text-xs font-quicksand font-light">
             {[...TYPE_FILTERS, ...PROGRESS_FILTERS].map((filter) => (
               <button
@@ -552,8 +550,10 @@ export default function VerticalProjectScroll() {
                     : handleProgressFilterToggle(filter)
                 }
                 className={`px-3 py-1 rounded-full transition-colors duration-200 ${
-                  (TYPE_FILTERS.includes(filter) && selectedTypes.includes(filter)) ||
-                  (PROGRESS_FILTERS.includes(filter) && selectedProgressFilters.includes(filter))
+                  (TYPE_FILTERS.includes(filter) &&
+                    selectedTypes.includes(filter)) ||
+                  (PROGRESS_FILTERS.includes(filter) &&
+                    selectedProgressFilters.includes(filter))
                     ? "bg-white text-black"
                     : "bg-gray-700/20 text-gray-200 hover:text-white"
                 }`}
@@ -720,7 +720,7 @@ export default function VerticalProjectScroll() {
       </div>
 
       <div className="absolute top-1/2 left-[15%] -translate-y-1/2 text-xs font-mono">
-        {String(currentSlide).padStart(3, "0")}
+        {String(currentSlide + 1).padStart(3, "0")}
       </div>
 
       {/* Loading overlay */}
@@ -739,8 +739,8 @@ export default function VerticalProjectScroll() {
       <div className="absolute right-[20%] -translate-x-1/2 top-8 h-[8rem] w-[2px] bg-gray-300">
         <div
           ref={progressBarRef}
-          className="w-full bg-black origin-top transition-transform duration-100 ease-out"
-          style={{ transform: 'scaleY(0)' }}
+          className="w-full h-full bg-black origin-top transition-transform duration-100 ease-out"
+          style={{ transform: "scaleY(0)" }}
         />
       </div>
 

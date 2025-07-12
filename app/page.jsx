@@ -57,14 +57,13 @@ export default function HomePage() {
           className="mt-8 text-black  font-bold flex gap-4 md:px-1 py-1 -rotate-180"
           style={{ writingMode: "vertical-lr" }}
         >
-
           <p>
             <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">
               Y
             </span>{" "}
             {mousePos.y}
           </p>
-                    <p>
+          <p>
             <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">
               H
             </span>{" "}
@@ -80,16 +79,23 @@ export default function HomePage() {
         {Math.floor(screenSize.height / 2)}
       </div>
 
-      <div className="fixed w-full h-6 bg-[#b4aea7] top-0 z-[100] text-black">
+      <div className="fixed w-full h-4 md:h-6 bg-[#b4aea7] top-0 z-[100] text-black">
         <div
           className="fixed top-0 z-[101] font-bold text-xs text-black"
           style={{ left: `${mousePos.x - 12}px` }}
         >
           {mousePos.x - screenSize.height}
         </div>
+
+        <div
+          className="fixed lg:hidden top-0 -translate-x-1/2 left-1/2 z-[101] font-bold text-xs text-black"
+          
+        >
+          [Feture Projects]
+        </div>
       </div>
 
-      <div className="fixed h-full w-6 bg-[#b4aea7] top-0 right-0 z-[100] text-black">
+      <div className="fixed h-full w-4 lg:w-6 bg-[#b4aea7] top-0 right-0 z-[100] text-black">
         <div
           className="fixed font-bold text-xs right-0 text-black"
           style={{ top: `${mousePos.y - 12}px`, writingMode: "vertical-lr" }}
@@ -98,8 +104,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="fixed bg-[#b4aea7] w-full bottom-0 right-6 z-[100] font-bold text-xs text-white">
-        <div className="text-black flex justify-end gap-4 md:px-2 md:py-1">
+      <div className="fixed bg-[#b4aea7] w-full bottom-0 right-0 z-[100] font-bold text-xs text-white">
+        <div className="text-black flex justify-end gap-4 px-6 py-0 md:py-1">
           <p>
             <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">
               X
@@ -150,7 +156,6 @@ export default function HomePage() {
       >
         Open Project
       </div>
-
 
       <HorizontalScroll />
     </>
