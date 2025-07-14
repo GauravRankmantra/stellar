@@ -75,14 +75,10 @@ function Slide({ slide, index, isMobile }) {
       gsapCtx.current.revert();
     }
 
-    // Destroy Lenis
-    // if (lenisRef.current) {
-    //   lenisRef.current.destroy();
-    // }
-
     // Clear all GSAP tweens
     gsap.killTweensOf("*");
   }, []);
+
   const handleNavigation = useCallback(
     (href) => {
       setIsNavigating(true);
@@ -97,6 +93,7 @@ function Slide({ slide, index, isMobile }) {
     },
     [cleanupAnimations, router]
   );
+
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
@@ -123,7 +120,7 @@ function Slide({ slide, index, isMobile }) {
             start: "left right",
             end: "right left",
             scrub: 0.8,
-            id: `slide-image-${index}`, // Add unique ID for tracking
+            id: `slide-image-${index}`,
           },
         });
 
@@ -136,7 +133,7 @@ function Slide({ slide, index, isMobile }) {
             start: "left right",
             end: "right left",
             scrub: 1,
-            id: `slide-title-${index}`, // Add unique ID for tracking
+            id: `slide-title-${index}`,
           },
         });
 
@@ -149,14 +146,13 @@ function Slide({ slide, index, isMobile }) {
             start: "left right",
             end: "right left",
             scrub: 1.2,
-            id: `slide-meta-${index}`, // Add unique ID for tracking
+            id: `slide-meta-${index}`,
           },
         });
       }
     }, element);
 
     return () => {
-      // Proper cleanup
       if (gsapCtx.current) {
         gsapCtx.current.revert();
       }
@@ -164,37 +160,34 @@ function Slide({ slide, index, isMobile }) {
   }, [index]);
 
   return (
-<div
-    ref={ref}
-    onClick={!isMobile ? () => handleNavigation(`/projects/${slide.slug}`) : undefined}
-    onTouchStart={isMobile ? (e) => {
-      // Store initial touch position
-      const touch = e.touches[0];
-      e.currentTarget.touchStartX = touch.clientX;
-      e.currentTarget.touchStartY = touch.clientY;
-      e.currentTarget.touchStartTime = Date.now();
-    } : undefined}
-    onTouchEnd={isMobile ? (e) => {
-      const touch = e.changedTouches[0];
-      const startX = e.currentTarget.touchStartX;
-      const startY = e.currentTarget.touchStartY;
-      const startTime = e.currentTarget.touchStartTime;
-      
-      // Calculate distance and time
-      const deltaX = Math.abs(touch.clientX - startX);
-      const deltaY = Math.abs(touch.clientY - startY);
-      const deltaTime = Date.now() - startTime;
-      
-      // If it's a tap (small movement, short time), trigger navigation
-      if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleNavigation(`/projects/${slide.slug}`);
-      }
-    } : undefined}
-    className="lg:w-screen h-screen flex-shrink-0 relative overflow-hidden"
-    style={{ touchAction: isMobile ? 'pan-x' : 'auto' }}
-  >
+    <div
+      ref={ref}
+      onClick={!isMobile ? () => handleNavigation(`/projects/${slide.slug}`) : undefined}
+      onTouchStart={isMobile ? (e) => {
+        const touch = e.touches[0];
+        e.currentTarget.touchStartX = touch.clientX;
+        e.currentTarget.touchStartY = touch.clientY;
+        e.currentTarget.touchStartTime = Date.now();
+      } : undefined}
+      onTouchEnd={isMobile ? (e) => {
+        const touch = e.changedTouches[0];
+        const startX = e.currentTarget.touchStartX;
+        const startY = e.currentTarget.touchStartY;
+        const startTime = e.currentTarget.touchStartTime;
+        
+        const deltaX = Math.abs(touch.clientX - startX);
+        const deltaY = Math.abs(touch.clientY - startY);
+        const deltaTime = Date.now() - startTime;
+        
+        if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleNavigation(`/projects/${slide.slug}`);
+        }
+      } : undefined}
+      className="lg:w-screen h-screen flex-shrink-0 relative overflow-hidden"
+      style={{ touchAction: isMobile ? 'pan-x' : 'auto' }}
+    >
       <Image
         src={slide.image}
         alt={slide.title}
@@ -220,7 +213,7 @@ function Slide({ slide, index, isMobile }) {
         </motion.h2>
 
         <motion.div
-          className="slide-meta font-mono  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center gap-2 flex-wrap will-change-transform"
+          className="slide-meta font-mono absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center gap-2 flex-wrap will-change-transform"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
@@ -264,6 +257,7 @@ export default function HorizontalScroll() {
   const footerRef = useRef(null);
   const lenisRef = useRef(null);
   const mainGsapCtx = useRef(null);
+  const scrollTweenRef = useRef(null); // Store the scroll tween for later use
   const router = useRouter();
 
   const [closedMenuWidth, setClosedMenuWidth] = useState(getClosedMenuWidth());
@@ -358,22 +352,24 @@ export default function HorizontalScroll() {
     };
   }, [handleResize, handleMouseMove, isTouch]);
 
-  // Improved Lenis Scroll Initialization
+  // Improved Lenis Scroll Initialization with slower mobile speeds
   useEffect(() => {
     if (isNavigating) return;
 
-const lenis = new Lenis({
-  duration: isMobile ? 2.0 : 1.2,
-  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-  smooth: true,
-  smoothTouch: isMobile,
-  touchMultiplier: isMobile ? 0.5 : 2, // Reduce sensitivity
-  infinite: false,
-  autoResize: true,
-  syncTouch: true,
-  gestureOrientationM: true,
-  normalizeWheel: true,
-});
+    const lenis = new Lenis({
+      duration: isMobile ? 3.5 : 1.2, // Much slower on mobile
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+      smoothTouch: isMobile,
+      touchMultiplier: isMobile ? 0.2 : 2, // Much lower sensitivity on mobile
+      infinite: false,
+      autoResize: true,
+      syncTouch: true,
+      gestureOrientationM: true,
+      normalizeWheel: true,
+      wheelMultiplier: isMobile ? 0.5 : 1, // Slower wheel scrolling on mobile
+    });
+    
     lenisRef.current = lenis;
 
     let rafId;
@@ -392,7 +388,6 @@ const lenis = new Lenis({
     });
 
     const preventDefault = (e) => {
-      // Don't prevent touch events on interactive elements
       if (
         e.target.closest("button") ||
         e.target.closest("a") ||
@@ -415,7 +410,7 @@ const lenis = new Lenis({
       document.removeEventListener("touchstart", preventDefault);
       document.removeEventListener("touchmove", preventDefault);
     };
-  }, [isNavigating]);
+  }, [isNavigating, isMobile]);
 
   // Horizontal scroll setup with integrated navigation visibility
   useEffect(() => {
@@ -442,43 +437,38 @@ const lenis = new Lenis({
         width: vw * slidesEls.length,
       });
 
-      // Main horizontal scroll animation
-      // Main horizontal scroll animation
-      let scrollTween;
-
+      // Main horizontal scroll animation with slower mobile scrub
       if (isMobile) {
-        // Mobile: Force one slide at a time
-        scrollTween = gsap.to(wrapper, {
+        // Mobile: Much slower scrub and better snapping
+        scrollTweenRef.current = gsap.to(wrapper, {
           x: () => -(vw * (slidesEls.length - 1)),
           ease: "none",
           scrollTrigger: {
             trigger: container,
             pin: true,
-            scrub: 0.3,
+            scrub: 1.5, // Much slower scrub for mobile
             id: "horizontalScroll",
-            end: () => `+=${vw * (slidesEls.length - 1)}`,
+            end: () => `+=${vw * (slidesEls.length - 1) * 2}`, // Longer scroll distance
             snap: {
               snapTo: (progress) => {
-                // Force exact slide positions
                 const totalSlides = slidesEls.length;
                 const currentSlide = Math.round(progress * (totalSlides - 1));
                 return currentSlide / (totalSlides - 1);
               },
-              duration: 1.5,
+              duration: 2, // Longer snap duration
               ease: "power2.out",
-              delay: 0.1,
+              delay: 0.2,
             },
             onUpdate: (self) => {
-              // Additional snapping control for mobile
               const progress = self.progress;
               const slideIndex = Math.round(progress * (slidesEls.length - 1));
               const targetProgress = slideIndex / (slidesEls.length - 1);
 
-              // If user stops scrolling, snap to nearest slide
-              if (Math.abs(progress - targetProgress) < 0.02) {
+              // Enhanced snapping for mobile
+              if (Math.abs(progress - targetProgress) < 0.05) {
                 gsap.to(wrapper, {
                   x: -(vw * slideIndex),
-                  duration: 0.5,
+                  duration: 1,
                   ease: "power2.out",
                 });
               }
@@ -488,7 +478,7 @@ const lenis = new Lenis({
         });
       } else {
         // Desktop: Original behavior
-        scrollTween = gsap.to(wrapper, {
+        scrollTweenRef.current = gsap.to(wrapper, {
           x: () => -(vw * (slidesEls.length - 1)),
           ease: "none",
           scrollTrigger: {
@@ -539,6 +529,21 @@ const lenis = new Lenis({
     };
   }, [isMobile, isNavigating]);
 
+  // Example of using scrollTweenRef for programmatic control
+  const goToSlide = useCallback((slideIndex) => {
+    if (scrollTweenRef.current && !isNavigating) {
+      const totalSlides = originalProjects.length;
+      const targetProgress = slideIndex / (totalSlides - 1);
+      
+      // Animate to specific slide
+      gsap.to(scrollTweenRef.current, {
+        progress: targetProgress,
+        duration: 1,
+        ease: "power2.out",
+      });
+    }
+  }, [isNavigating]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -582,6 +587,7 @@ const lenis = new Lenis({
       };
     }
   }, [isMobile, isNavigating, toggleMenu]);
+
   // Optimized container variants
   const containerVariants = useMemo(
     () => ({
@@ -637,13 +643,13 @@ const lenis = new Lenis({
       <div ref={containerRef} className="relative z-10 overflow-hidden">
         <div ref={wrapperRef} className="flex">
           {originalProjects.map((slide, index) => (
-  <Slide
-    key={`${slide.title}-${slide.location}-${index}`}
-    slide={slide}
-    index={index}
-    isMobile={isMobile}
-  />
-))}
+            <Slide
+              key={`${slide.title}-${slide.location}-${index}`}
+              slide={slide}
+              index={index}
+              isMobile={isMobile}
+            />
+          ))}
         </div>
       </div>
 
