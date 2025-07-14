@@ -11,13 +11,11 @@ export async function generateStaticParams() {
 export default function ProjectDetailPage({ params }) {
   const { slug } = params;
 
-  
   const index = originalProjects.findIndex((p) => p.slug === slug);
   if (index === -1) return notFound();
 
   const project = originalProjects[index];
   const nextProject = originalProjects[(index + 1) % originalProjects.length];
-
 
   return <ProjectDetailClient project={project} nextProject={nextProject} />;
 }
