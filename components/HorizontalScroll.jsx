@@ -59,7 +59,7 @@ const metaVariants = {
   }),
 };
 
-function Slide({ slide, index }) {
+function Slide({ slide, index, isMobile }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { amount: 0.3, once: false });
   const gsapCtx = useRef(null);
@@ -164,11 +164,37 @@ function Slide({ slide, index }) {
   }, [index]);
 
   return (
-    <div
-      ref={ref}
-      onClick={() => handleNavigation(`/projects/${slide.slug}`)}
-      className="lg:w-screen h-screen flex-shrink-0 relative overflow-hidden"
-    >
+<div
+    ref={ref}
+    onClick={!isMobile ? () => handleNavigation(`/projects/${slide.slug}`) : undefined}
+    onTouchStart={isMobile ? (e) => {
+      // Store initial touch position
+      const touch = e.touches[0];
+      e.currentTarget.touchStartX = touch.clientX;
+      e.currentTarget.touchStartY = touch.clientY;
+      e.currentTarget.touchStartTime = Date.now();
+    } : undefined}
+    onTouchEnd={isMobile ? (e) => {
+      const touch = e.changedTouches[0];
+      const startX = e.currentTarget.touchStartX;
+      const startY = e.currentTarget.touchStartY;
+      const startTime = e.currentTarget.touchStartTime;
+      
+      // Calculate distance and time
+      const deltaX = Math.abs(touch.clientX - startX);
+      const deltaY = Math.abs(touch.clientY - startY);
+      const deltaTime = Date.now() - startTime;
+      
+      // If it's a tap (small movement, short time), trigger navigation
+      if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNavigation(`/projects/${slide.slug}`);
+      }
+    } : undefined}
+    className="lg:w-screen h-screen flex-shrink-0 relative overflow-hidden"
+    style={{ touchAction: isMobile ? 'pan-x' : 'auto' }}
+  >
       <Image
         src={slide.image}
         alt={slide.title}
@@ -336,19 +362,18 @@ export default function HorizontalScroll() {
   useEffect(() => {
     if (isNavigating) return;
 
-    const lenis = new Lenis({
-      duration: isMobile ? 1.8 : 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smooth: true,
-      smoothTouch: isMobile,
-      touchMultiplier: isMobile ? 0.8 : 2,
-      infinite: false,
-      autoResize: true,
-      syncTouch: true,
-      gestureOrientationM: true,
-      normalizeWheel: true,
-    });
-
+const lenis = new Lenis({
+  duration: isMobile ? 2.0 : 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smooth: true,
+  smoothTouch: isMobile,
+  touchMultiplier: isMobile ? 0.5 : 2, // Reduce sensitivity
+  infinite: false,
+  autoResize: true,
+  syncTouch: true,
+  gestureOrientationM: true,
+  normalizeWheel: true,
+});
     lenisRef.current = lenis;
 
     let rafId;
@@ -418,27 +443,69 @@ export default function HorizontalScroll() {
       });
 
       // Main horizontal scroll animation
-      const scrollTween = gsap.to(wrapper, {
-        x: () => -(vw * (slidesEls.length - 1)),
-        ease: "none",
-        scrollTrigger: {
-          trigger: container,
-          pin: true,
-          scrub: isMobile ? 0.8 : 0.5,
-          id: "horizontalScroll",
-          end: () => `+=${vw * (slidesEls.length - 1)}`,
-          snap: {
-            snapTo: (progress) => {
-              const slideIndex = Math.round(progress * (slidesEls.length - 1));
-              return slideIndex / (slidesEls.length - 1);
+      // Main horizontal scroll animation
+      let scrollTween;
+
+      if (isMobile) {
+        // Mobile: Force one slide at a time
+        scrollTween = gsap.to(wrapper, {
+          x: () => -(vw * (slidesEls.length - 1)),
+          ease: "none",
+          scrollTrigger: {
+            trigger: container,
+            pin: true,
+            scrub: 0.3,
+            id: "horizontalScroll",
+            end: () => `+=${vw * (slidesEls.length - 1)}`,
+            snap: {
+              snapTo: (progress) => {
+                // Force exact slide positions
+                const totalSlides = slidesEls.length;
+                const currentSlide = Math.round(progress * (totalSlides - 1));
+                return currentSlide / (totalSlides - 1);
+              },
+              duration: 1.5,
+              ease: "power2.out",
+              delay: 0.1,
             },
-            duration: isMobile ? 1.2 : 0.5,
-            ease: "power2.out",
-            delay: isMobile ? 0.1 : 0,
+            onUpdate: (self) => {
+              // Additional snapping control for mobile
+              const progress = self.progress;
+              const slideIndex = Math.round(progress * (slidesEls.length - 1));
+              const targetProgress = slideIndex / (slidesEls.length - 1);
+
+              // If user stops scrolling, snap to nearest slide
+              if (Math.abs(progress - targetProgress) < 0.02) {
+                gsap.to(wrapper, {
+                  x: -(vw * slideIndex),
+                  duration: 0.5,
+                  ease: "power2.out",
+                });
+              }
+            },
+            invalidateOnRefresh: true,
           },
-          invalidateOnRefresh: true,
-        },
-      });
+        });
+      } else {
+        // Desktop: Original behavior
+        scrollTween = gsap.to(wrapper, {
+          x: () => -(vw * (slidesEls.length - 1)),
+          ease: "none",
+          scrollTrigger: {
+            trigger: container,
+            pin: true,
+            scrub: 0.5,
+            id: "horizontalScroll",
+            end: () => `+=${vw * (slidesEls.length - 1)}`,
+            snap: {
+              snapTo: 1 / (slidesEls.length - 1),
+              duration: 0.5,
+              ease: "power2.out",
+            },
+            invalidateOnRefresh: true,
+          },
+        });
+      }
 
       // Navigation visibility trigger
       const navTrigger = ScrollTrigger.create({
@@ -570,12 +637,13 @@ export default function HorizontalScroll() {
       <div ref={containerRef} className="relative z-10 overflow-hidden">
         <div ref={wrapperRef} className="flex">
           {originalProjects.map((slide, index) => (
-            <Slide
-              key={`${slide.title}-${slide.location}-${index}`}
-              slide={slide}
-              index={index}
-            />
-          ))}
+  <Slide
+    key={`${slide.title}-${slide.location}-${index}`}
+    slide={slide}
+    index={index}
+    isMobile={isMobile}
+  />
+))}
         </div>
       </div>
 
