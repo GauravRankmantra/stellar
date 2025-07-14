@@ -446,7 +446,7 @@ export default function HorizontalScroll() {
           scrollTrigger: {
             trigger: container,
             pin: true,
-            scrub: 1.5, // Much slower scrub for mobile
+            scrub: 1, // Much slower scrub for mobile
             id: "horizontalScroll",
             end: () => `+=${vw * (slidesEls.length - 1) * 2}`, // Longer scroll distance
             snap: {
