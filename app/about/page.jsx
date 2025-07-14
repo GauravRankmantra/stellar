@@ -1,17 +1,21 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import TextPressure from "../../components/TextPressure";
-import SplitText from "../../components/SplitText";
+import React, { useEffect, useState,useRef } from "react";
+import Lenis from '@studio-freight/lenis';
+
 import { TextAnimate } from "@/components/magicui/text-animate";
 import CircularText from "../../components/CircularText";
 import Navbar from "@/components/NavBar";
+import NavbarAbout from "@/components/NavbarAbout";
 import { cn } from "@/lib/utils";
 import TeamSection from "../../components/TeamSection";
+import Gallery from "../../components/Gallery";
 
 const page = () => {
+    const lenisRef = useRef();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
   const [isHoveringNav, setIsHoveringNav] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
 
   const cursorOffset = isHoveringNav ? 40 : 6;
 
@@ -31,7 +35,49 @@ const page = () => {
       image: "/images/team1.jpg",
     },
   ];
+  const awardsData = [
+    {
+      year: "2024",
+      title: "Excellence in Rehabilitation Award",
+      description:
+        "The Georgia Trust for Historic Preservation Wheat Street Christian Education Building",
+    },
+    {
+      year: "2023",
+      title: "AIA Design Award",
+      description: "Sustainable Urban Housing Project - Phase II",
+    },
+    {
+      year: "2022",
+      title: "Green Building Leadership Award",
+      description: "Community Eco-Hub Initiative - National Recognition",
+    },
+    {
+      year: "2021",
+      title: "Historic Preservation Award",
+      description: "Adaptive Reuse of Old Mill District",
+    },
+  ];
+useEffect(() => {
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smooth: true,
+  });
 
+  lenisRef.current = lenis;
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+
+  requestAnimationFrame(raf);
+
+  return () => {
+    lenis.destroy();
+  };
+}, []);
   useEffect(() => {
     const handleHover = (e) => {
       const tag = e.target.tagName.toLowerCase();
@@ -78,11 +124,11 @@ const page = () => {
         className={cn(
           "absolute inset-0",
           "[background-size:30px_30px]",
-          "[background-image:linear-gradient(to_right,#c7c2bb_0px,transparent_0.7px),linear-gradient(to_bottom,#c7c2bb_0px,transparent_0px)]",
-           "z-0"
+          "[background-image:linear-gradient(to_right,#c7c2bb_0px,transparent_0.5px),linear-gradient(to_bottom,#c7c2bb_0px,transparent_0px)]",
+          "z-0"
         )}
       />
-      <div className="fixed h-full left-0 top-0 z-[100] bg-[#b4aea7] text-xs text-white">
+      <div className="fixed h-full left-0 top-0 z-[100]  text-xs text-white">
         <div
           className="mt-8 text-black  font-bold flex gap-4 md:px-1 py-1 -rotate-180"
           style={{ writingMode: "vertical-lr" }}
@@ -109,7 +155,7 @@ const page = () => {
         {Math.floor(screenSize.height / 2)}
       </div>
 
-      <div className="fixed w-full h-4 md:h-6 bg-[#b4aea7] top-0 z-[100] text-black">
+      <div className="fixed w-full h-4 md:h-6  top-0 z-[100] text-black">
         <div
           className="fixed top-0 z-[101] font-bold text-xs text-black"
           style={{ left: `${mousePos.x - 12}px` }}
@@ -122,7 +168,7 @@ const page = () => {
         </div>
       </div>
 
-      <div className="fixed h-full w-4 lg:w-6 bg-[#b4aea7] top-0 right-0 z-[100] text-black">
+      <div className="fixed h-full w-4 lg:w-6  top-0 right-0 z-[100] text-black">
         <div
           className="fixed font-bold text-xs right-0 text-black"
           style={{ top: `${mousePos.y - 12}px`, writingMode: "vertical-lr" }}
@@ -131,7 +177,7 @@ const page = () => {
         </div>
       </div>
 
-      <div className="fixed bg-[#b4aea7] w-full bottom-0 right-0 z-[100] font-bold text-xs text-white">
+      <div className="fixed  w-full bottom-0 right-0 z-[100] font-bold text-xs text-white">
         <div className="text-black flex justify-end gap-4 px-6 py-0 md:py-1">
           <p>
             <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">
@@ -173,12 +219,12 @@ const page = () => {
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white opacity-70" />
         <div className="absolute top-1/2 left-0 right-0 h-px bg-white opacity-70" />
       </div>
-      <Navbar />
+      <NavbarAbout />
       {/* main content  */}
       <div>
         {/* top section */}
         <div className="p-6 h-screen relative">
-          <div className=" text-5xl font-gilroy font-bold tracking-[-2px] uppercase">
+          <div className=" text-3xl lg:text-5xl font-gilroy font-bold tracking-[-2px] uppercase">
             <TextAnimate animation="fadeIn" by="line" as="p">
               {`Stellar Design Lab is a research-based \n\ndesign studio headquartered in India, \n\ndriven by the conviction that well-crafted space can \n\ncatalyze positive social and ecological change.`}
             </TextAnimate>
@@ -207,8 +253,131 @@ const page = () => {
           </div>
         </div>
         {/* team section */}
-        <div className=" h-screen p-6 z-[9999]">
+        <div className=" p-6 z-[9999]">
           <TeamSection team={teamData} />
+        </div>
+        {/* Our Culture */}
+        <div className="relative px-6 py-10  h-screen ">
+          <div className="grid lg:grid-cols-4 grid-cols-1 gap-3 text-xs h-screen font-mono">
+            <div className="lg:sticky lg:top-[calc(80vh-5rem)] self-start">
+              <button
+                onClick={() => setShowGallery(true)}
+                className="flex  w-[20rem] font-bold py-1 justify-between"
+              >
+                <span>SEE US</span>
+                <span>IN ACTION </span>
+              </button>
+              {showGallery && <Gallery onClose={() => setShowGallery(false)} />}
+              <img
+                src="/images/bg2.jpg"
+                className="w-[20rem] h-[15rem] object-cover grayscale"
+              ></img>
+            </div>
+            <div>
+              <h1>Our Culture</h1>
+              <h1>[00-4]</h1>
+            </div>
+            <div>
+              <h1>1.0</h1>
+              <p>
+                As architects, our ultimate goal is to examine the needs of our
+                users and provide a creative design solution that serves as a
+                catalyst for positive living. Architects have the ability to
+                influence social environments through sculpting space, and by
+                examining those user needs and desires early on we are able to
+                cycle through many design opportunities that ultimately yields a
+                solution uniquely catered to each and every client.
+              </p>
+            </div>
+            <div className="space-y-5">
+              <h1>2.0</h1>
+              <p>
+                There are many phases to the architectural design process
+                (Programming, Schematic Design, Design Development, Construction
+                Documents, Construction Administration, just to name a few!)
+                that are used to integrate variables such as urban context,
+                accessibility, social impact, health & safety, performance, and
+                artistry. All of which we examine to determine design drivers
+                for each project.
+              </p>
+              <h1>3.0</h1>
+              <p>
+                A prime component to our process is through collaboration. This
+                is key to the best design solutions, and that collaboration
+                comes from our own internal team but also engagement of the
+                community and users. Each project presents a new collaborative
+                opportunity that requires research, exploration, and discovery.
+                It is this process that inevitably provides a refined design
+                solution that would not have been achievable if not for the team
+                involved. Constraints and problems are viewed as opportunities
+                for creative problem solving and can give life to new ideas.
+              </p>
+              <p className="uppercase">
+                We strive to deliver creative solutions for clients that give
+                them a space to thrive.
+              </p>
+            </div>
+          </div>
+        </div>
+        {/* Our Culture */}
+        <div className=" py-20 mt-5">
+          <h1 className="text-start lg:text-center text-3xl lg:text-5xl w-8/12 lg:mx-auto px-6 -tracking-wider font-gilroy uppercase">
+            We constantly search for innovative, strategic, and imaginative
+            individuals to enhance our team
+          </h1>
+          <div className="flex flex-col lg:flex-row justify-between text-xs p-6 font-mono font-light">
+            <p className="font-semibold hidden lg:block">[ work with us ]</p>
+            <div className="w-6/12 lg:w-2/12">
+              <p>view positions</p>
+              <div className="border flex justify-end border-black">
+                <svg
+                  className="w-12 h-12"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="0.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-external-link-icon lucide-external-link"
+                >
+                  <path d="M15 3h6v6" />
+                  <path d="M10 14 21 3" />
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                </svg>
+              </div>
+            </div>
+            <p className="font-gilroy mt-5 lg:mt-0 text-lg lg:w-4/12 -tracking-widest leading-tight uppercase font-bold">
+              If you would like to work with us, but can’t find a suitable role,
+              please send your application to hello@radga.com
+            </p>
+          </div>
+        </div>
+
+        {/* Awards */}
+        {/* Awards Section */}
+        <div className="w-full lg:w-8/12 flex flex-col lg:flex-row lg:justify-between py-10 pb-96 mb-10 px-4 md:px-6 mx-auto">
+          <div className="mb-8 lg:mb-0">
+            <h1 className="text-xl md:text-2xl font-bold">Awards</h1>
+          </div>
+          
+          <div className="flex-1 lg:ml-12">
+            {awardsData.map((award, index) => (
+              <div
+                key={index}
+                className="flex gap-4 md:gap-10 text-xs md:text-sm font-mono uppercase mb-6"
+              >
+                <h1 className="text-xl">•</h1>
+                <h1 className="min-w-[3rem]">{award.year}</h1>
+                <div className="flex-1">
+                  <p className="font-semibold mb-1">{award.title}</p>
+                  <p className="text-gray-600 leading-relaxed">{award.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </>

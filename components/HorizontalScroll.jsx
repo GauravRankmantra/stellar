@@ -9,6 +9,7 @@ import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { originalProjects } from "@/public/data/projects";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -22,38 +23,6 @@ const getClosedMenuWidth = () => {
     return "40vw";
   }
 };
-
-const slides = [
-  {
-    title: "The Stefanie H. Weill Center",
-    type: "ACTIVE BUILD",
-    impact: "SOCIAL-IMPACT",
-    location: "Atlanta, GA",
-    image: "/images/bg1.jpg",
-  },
-  {
-    title: "Harmony Resort Hotel",
-    type: "HOSPITALITY",
-    impact: "LUXURY",
-    location: "Malta",
-    image:
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3",
-  },
-  {
-    title: "Seabreeze Yacht Club",
-    type: "MARINE INFRASTRUCTURE",
-    impact: "HIGH-END",
-    location: "Valletta, Malta",
-    image: "/images/bg2.jpg",
-  },
-  {
-    title: "The Stefanie H. Weill Center",
-    type: "ACTIVE BUILD",
-    impact: "SOCIAL-IMPACT",
-    location: "Atlanta, GA",
-    image: "/images/bg1.jpg",
-  },
-];
 
 const titleVariants = {
   hidden: {
@@ -94,7 +63,41 @@ function Slide({ slide, index }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { amount: 0.3, once: false });
   const gsapCtx = useRef(null);
+  const router = useRouter();
+    const [isNavigating, setIsNavigating] = useState(false);
 
+
+    const cleanupAnimations = useCallback(() => {
+    // Kill all ScrollTrigger instances
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+
+    // Revert main GSAP context
+    if (gsapCtx.current) {
+      gsapCtx.current.revert();
+    }
+
+    // Destroy Lenis
+    // if (lenisRef.current) {
+    //   lenisRef.current.destroy();
+    // }
+
+    // Clear all GSAP tweens
+    gsap.killTweensOf("*");
+  }, []);
+  const handleNavigation = useCallback(
+    (href) => {
+      setIsNavigating(true);
+
+      // First cleanup all animations
+      cleanupAnimations();
+
+      // Small delay to ensure cleanup is complete
+      setTimeout(() => {
+        router.push(href);
+      }, 100);
+    },
+    [cleanupAnimations, router]
+  );
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
@@ -164,6 +167,7 @@ function Slide({ slide, index }) {
   return (
     <div
       ref={ref}
+      onClick={() => handleNavigation(`/projects/${slide.slug}`)}
       className="lg:w-screen h-screen flex-shrink-0 relative overflow-hidden"
     >
       <Image
@@ -191,12 +195,12 @@ function Slide({ slide, index }) {
         </motion.h2>
 
         <motion.div
-          className="slide-meta font-bold absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center gap-2 flex-wrap will-change-transform"
+          className="slide-meta font-mono  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center gap-2 flex-wrap will-change-transform"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
-          {[slide.title, slide.type, slide.impact, slide.location].map(
+          {[slide.title, slide.type, slide.progress, slide.location].map(
             (item, i) => (
               <motion.span
                 key={i}
@@ -236,7 +240,7 @@ export default function HorizontalScroll() {
   const lenisRef = useRef(null);
   const mainGsapCtx = useRef(null);
   const router = useRouter();
-  
+
   const [closedMenuWidth, setClosedMenuWidth] = useState(getClosedMenuWidth());
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState(false);
@@ -250,64 +254,73 @@ export default function HorizontalScroll() {
 
   // Memoized calculations
   const isTouch = useMemo(() => {
-    return typeof window !== "undefined" && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    return (
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window || navigator.maxTouchPoints > 0)
+    );
   }, []);
 
   // Cleanup function for all animations
   const cleanupAnimations = useCallback(() => {
     // Kill all ScrollTrigger instances
-    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+
     // Revert main GSAP context
     if (mainGsapCtx.current) {
       mainGsapCtx.current.revert();
     }
-    
+
     // Destroy Lenis
     if (lenisRef.current) {
       lenisRef.current.destroy();
     }
-    
+
     // Clear all GSAP tweens
     gsap.killTweensOf("*");
   }, []);
 
   // Handle navigation with proper cleanup
-  const handleNavigation = useCallback((href) => {
-    setIsNavigating(true);
-    
-    // First cleanup all animations
-    cleanupAnimations();
-    
-    // Small delay to ensure cleanup is complete
-    setTimeout(() => {
-      router.push(href);
-    }, 100);
-  }, [cleanupAnimations, router]);
+  const handleNavigation = useCallback(
+    (href) => {
+      setIsNavigating(true);
+
+      // First cleanup all animations
+      cleanupAnimations();
+
+      // Small delay to ensure cleanup is complete
+      setTimeout(() => {
+        router.push(href);
+      }, 100);
+    },
+    [cleanupAnimations, router]
+  );
 
   // Optimized resize handler
   const handleResize = useCallback(() => {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    
+
     setScreenSize({ width, height });
     setClosedMenuWidth(getClosedMenuWidth());
     setIsMobile(width < 768);
   }, []);
 
   // Optimized mouse move handler
-  const handleMouseMove = useCallback((e) => {
-    if (!isNavigating) {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    }
-  }, [isNavigating]);
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!isNavigating) {
+        setMousePos({ x: e.clientX, y: e.clientY });
+      }
+    },
+    [isNavigating]
+  );
 
   // Setup event listeners
   useEffect(() => {
     handleResize();
-    
+
     window.addEventListener("resize", handleResize);
-    
+
     if (!isTouch) {
       window.addEventListener("mousemove", handleMouseMove);
     }
@@ -358,16 +371,16 @@ export default function HorizontalScroll() {
       e.preventDefault();
     };
 
-    document.addEventListener('touchstart', preventDefault, { passive: false });
-    document.addEventListener('touchmove', preventDefault, { passive: false });
+    document.addEventListener("touchstart", preventDefault, { passive: false });
+    document.addEventListener("touchmove", preventDefault, { passive: false });
 
     return () => {
       if (rafId) {
         cancelAnimationFrame(rafId);
       }
       lenis.destroy();
-      document.removeEventListener('touchstart', preventDefault);
-      document.removeEventListener('touchmove', preventDefault);
+      document.removeEventListener("touchstart", preventDefault);
+      document.removeEventListener("touchmove", preventDefault);
     };
   }, [isNavigating]);
 
@@ -380,7 +393,7 @@ export default function HorizontalScroll() {
       const container = containerRef.current;
       const nav = navRef.current;
       const footer = footerRef.current;
-      
+
       if (!wrapper || !container || !nav || !footer) return;
 
       const slidesEls = Array.from(wrapper.children);
@@ -390,7 +403,7 @@ export default function HorizontalScroll() {
       slidesEls.forEach((el) => {
         gsap.set(el, { width: vw });
       });
-      
+
       gsap.set(wrapper, {
         display: "flex",
         width: vw * slidesEls.length,
@@ -424,9 +437,9 @@ export default function HorizontalScroll() {
         id: "navTrigger",
         onUpdate: (self) => {
           if (isNavigating) return;
-          
+
           const progress = self.progress;
-          
+
           gsap.set(nav, {
             y: progress * (isMobile ? 25 : 40),
             opacity: Math.max(0, 1 - progress * 1.2),
@@ -438,7 +451,6 @@ export default function HorizontalScroll() {
         onEnterBack: () => setShowNav(true),
         onLeaveBack: () => setShowNav(true),
       });
-
     }, containerRef);
 
     return () => {
@@ -457,60 +469,70 @@ export default function HorizontalScroll() {
 
   const toggleMenu = useCallback(() => {
     if (!isNavigating) {
-      setIsOpen(prev => !prev);
+      setIsOpen((prev) => !prev);
     }
   }, [isNavigating]);
 
   // Optimized container variants
-  const containerVariants = useMemo(() => ({
-    closed: {
-      width: closedMenuWidth || "40vw",
-      height: "80px",
-      bottom: "5rem",
-      left: "50%",
-      x: "-50%",
-      opacity: 1,
-      scale: 1,
-      borderRadius: "0.75rem",
-      pointerEvents: "auto",
-    },
-    open: {
-      width: "100%",
-      height: "100%",
-      bottom: "0",
-      left: "0",
-      x: "0",
-      opacity: 1,
-      scale: 1,
-      borderRadius: "0",
-      pointerEvents: "auto",
-      transition: {
-        type: "spring",
-        stiffness: 280,
-        damping: 22,
-        duration: 0.6,
+  const containerVariants = useMemo(
+    () => ({
+      closed: {
+        width: closedMenuWidth || "40vw",
+        height: "80px",
+        bottom: "5rem",
+        left: "50%",
+        x: "-50%",
+        opacity: 1,
+        scale: 1,
+        borderRadius: "0.75rem",
+        pointerEvents: "auto",
       },
-    },
-  }), [closedMenuWidth]);
+      open: {
+        width: "100%",
+        height: "100%",
+        bottom: "0",
+        left: "0",
+        x: "0",
+        opacity: 1,
+        scale: 1,
+        borderRadius: "0",
+        pointerEvents: "auto",
+        transition: {
+          type: "spring",
+          stiffness: 280,
+          damping: 22,
+          duration: 0.6,
+        },
+      },
+    }),
+    [closedMenuWidth]
+  );
 
-  const contentVariants = useMemo(() => ({
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: 0.2,
-        duration: 0.8,
+  const contentVariants = useMemo(
+    () => ({
+      hidden: { opacity: 0, y: 20 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+          delay: 0.2,
+          duration: 0.8,
+        },
       },
-    },
-  }), []);
+    }),
+    []
+  );
 
   return (
     <>
       <div ref={containerRef} className="relative z-10 overflow-hidden">
         <div ref={wrapperRef} className="flex">
-          {slides.map((slide, index) => (
-            <Slide key={`${slide.title}-${slide.location}-${index}`} slide={slide} index={index} />
+          {originalProjects.map((slide, index) => (
+            <Slide
+              key={`${slide.title}-${slide.location}-${index}`}
+              slide={slide}
+              index={index}
+            />
           ))}
         </div>
       </div>
@@ -526,9 +548,9 @@ export default function HorizontalScroll() {
               opacity: 0,
               y: 30,
               scale: 0.98,
-              transition: { 
+              transition: {
                 duration: 0.4,
-                ease: "easeInOut"
+                ease: "easeInOut",
               },
             }}
             ref={navRef}
@@ -554,16 +576,16 @@ export default function HorizontalScroll() {
               >
                 <div
                   className={`absolute w-14 h-px bg-white transition-all duration-300 ease-in-out ${
-                    isOpen 
-                      ? 'rotate-45 translate-y-0' 
-                      : 'group-hover:rotate-45 group-hover:translate-y-0 -translate-y-2'
+                    isOpen
+                      ? "rotate-45 translate-y-0"
+                      : "group-hover:rotate-45 group-hover:translate-y-0 -translate-y-2"
                   }`}
                 />
                 <div
                   className={`absolute w-14 h-px bg-white transition-all duration-300 ease-in-out ${
-                    isOpen 
-                      ? '-rotate-45 translate-y-0' 
-                      : 'group-hover:-rotate-45 group-hover:translate-y-0 translate-y-2'
+                    isOpen
+                      ? "-rotate-45 translate-y-0"
+                      : "group-hover:-rotate-45 group-hover:translate-y-0 translate-y-2"
                   }`}
                 />
               </button>
@@ -582,12 +604,12 @@ export default function HorizontalScroll() {
                   >
                     <div
                       className={`absolute transition-transform duration-300 left-1/2 top-0 bottom-0 w-px bg-white opacity-70 ${
-                        isHoveringNav ? 'rotate-45' : 'rotate-0'
+                        isHoveringNav ? "rotate-45" : "rotate-0"
                       }`}
                     />
                     <div
                       className={`absolute transition-transform duration-300 top-1/2 left-0 right-0 h-px bg-white opacity-70 ${
-                        isHoveringNav ? 'rotate-45' : 'rotate-0'
+                        isHoveringNav ? "rotate-45" : "rotate-0"
                       }`}
                     />
                   </div>
@@ -602,12 +624,14 @@ export default function HorizontalScroll() {
                 >
                   {/* Simplified decorative grid lines */}
                   <div className="absolute left-1/2 top-0 bottom-0 flex flex-col justify-between h-full -translate-x-1/2 w-1 opacity-60">
-                    {Array(5).fill(0).map((_, idx) => (
-                      <div
-                        key={`line-center-${idx}`}
-                        className="w-full h-1 bg-white/40"
-                      />
-                    ))}
+                    {Array(5)
+                      .fill(0)
+                      .map((_, idx) => (
+                        <div
+                          key={`line-center-${idx}`}
+                          className="w-full h-1 bg-white/40"
+                        />
+                      ))}
                   </div>
 
                   {/* Navigation Links */}
@@ -706,9 +730,13 @@ export default function HorizontalScroll() {
           <div className="md:w-3/12">
             <div className="text-xs flex justify-center lg:justify-start items-center font-mono gap-4 mt-4">
               <button onClick={() => handleNavigation("/")}>HOMEPAGE</button>
-              <button onClick={() => handleNavigation("/projects")}>PROJECT</button>
+              <button onClick={() => handleNavigation("/projects")}>
+                PROJECT
+              </button>
               <button onClick={() => handleNavigation("/about")}>ABOUT</button>
-              <button onClick={() => handleNavigation("/contact")}>CONTACT</button>
+              <button onClick={() => handleNavigation("/contact")}>
+                CONTACT
+              </button>
             </div>
             <p className="font-mono text-center lg:text-start text-sm mt-4">
               We're a creative, collaborative, research based, social enterprise
@@ -774,7 +802,9 @@ export default function HorizontalScroll() {
                 {Math.floor(screenSize.width / 2)}
               </div>
               <div className="absolute bottom-0 left-14 transform -translate-x-1/2 z-[101] text-center">
-                <button onClick={() => handleNavigation("/privacy-policy")}>Privacy policy</button>
+                <button onClick={() => handleNavigation("/privacy-policy")}>
+                  Privacy policy
+                </button>
               </div>
             </div>
           </div>

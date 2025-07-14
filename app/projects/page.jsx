@@ -324,58 +324,57 @@ export default function VerticalProjectScroll() {
   // Render methods
   const renderCoordinateDisplay = () => (
     <>
-      {/* Left section */}
-      <div className="absolute h-full left-0 top-0 bg-[#b4aea7] text-xs text-white">
+      <div className="fixed h-full left-0 top-0 z-[100] bg-[#b4aea7] text-xs text-white">
         <div
-          className="mt-8 text-black font-bold flex gap-4 md:px-1 py-1 -rotate-180"
+          className="mt-8 text-black  font-bold flex gap-4 md:px-1 py-1 -rotate-180"
           style={{ writingMode: "vertical-lr" }}
         >
           <p>
-            <span className="border text-[8px] py-1 md:py-1 md:px-[0.15rem] rounded-full">
-              H
-            </span>{" "}
-            {screenSize.height}
-          </p>
-          <p>
-            <span className="border text-[8px] py-1 md:py-1 md:px-[0.15rem] rounded-full">
+            <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">
               Y
             </span>{" "}
             {mousePos.y}
           </p>
+          <p>
+            <span className="border text-[8px] py-1 md:px-[0.15rem] rounded-full">
+              H
+            </span>{" "}
+            {screenSize.height}
+          </p>
         </div>
       </div>
 
-      {/* Vertical center line */}
       <div
-        className="absolute left-0 top-[50%] -translate-y-1/2 text-center font-bold text-xs text-black -rotate-180"
+        className="fixed left-0 top-1/2 z-[102] -translate-y-1/2 text-center font-bold text-xs text-black -rotate-180"
         style={{ writingMode: "vertical-lr" }}
       >
         {Math.floor(screenSize.height / 2)}
       </div>
 
-      {/* Top section */}
-      <div className="absolute w-full h-6 bg-[#b4aea7] top-0 text-black">
+      <div className="fixed w-full h-4 md:h-6 bg-[#b4aea7] top-0 z-[100] text-black">
         <div
-          className="absolute top-0 z-[101] font-bold text-xs text-black"
+          className="fixed top-0 z-[101] font-bold text-xs text-black"
           style={{ left: `${mousePos.x - 12}px` }}
         >
           {mousePos.x - screenSize.height}
         </div>
+
+        <div className="fixed lg:hidden top-0 -translate-x-1/2 left-1/2 z-[101] font-bold text-xs text-black">
+          [Feture Projects]
+        </div>
       </div>
 
-      {/* Right section */}
-      <div className="absolute h-full w-6 bg-[#b4aea7] top-0 right-0 text-black">
+      <div className="fixed h-full w-4 lg:w-6 bg-[#b4aea7] top-0 right-0 z-[100] text-black">
         <div
-          className="absolute font-bold text-xs right-0 text-black"
+          className="fixed font-bold text-xs right-0 text-black"
           style={{ top: `${mousePos.y - 12}px`, writingMode: "vertical-lr" }}
         >
           {screenSize.height - mousePos.y * 2}
         </div>
       </div>
 
-      {/* Bottom section */}
-      <div className="absolute bg-[#b4aea7] w-full right-6 font-bold bottom-0 text-xs text-white">
-        <div className="text-black flex justify-end gap-4 md:px-2 md:py-1">
+      <div className="fixed bg-[#b4aea7] w-full bottom-0 right-0 z-[100] font-bold text-xs text-white">
+        <div className="text-black flex justify-end gap-4 px-6 py-0 md:py-1">
           <p>
             <span className="border text-[8px] px-1 md:py-1 md:px-[0.25rem] rounded-full">
               X
@@ -388,11 +387,20 @@ export default function VerticalProjectScroll() {
             </span>
             {screenSize.width}
           </p>
-          <div className="absolute bottom-0 left-[48.5%] z-[101] text-center text-black">
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-[101] text-center text-black">
             {Math.floor(screenSize.width / 2)}
           </div>
         </div>
       </div>
+
+      <div
+        className="pointer-events-none fixed z-[101] top-0 bottom-0 w-px bg-[#999692]/50"
+        style={{ left: `${mousePos.x}px` }}
+      />
+      <div
+        className="pointer-events-none fixed z-[101] left-0 right-0 h-px bg-[#999692]/50"
+        style={{ top: `${mousePos.y}px` }}
+      />
     </>
   );
 
@@ -423,9 +431,9 @@ export default function VerticalProjectScroll() {
   };
 
   const renderViewControls = () => (
-    <div className="absolute justify-between w-[15%] top-1/2 -translate-y-1/2 right-16 z-20 flex gap-2 items-center text-sm font-mono">
+    <div className="absolute justify-between w-[15%] top-1/2 -translate-y-1/2 right-14 lg:right-16 z-20 flex gap-2 items-center text-sm font-mono">
       <p>/ {String(filteredProjects.length).padStart(3, "0")}</p>
-      <div className="space-x-1">
+      <div className="lg:space-x-1">
         {[1, 2].map((mode) => (
           <button
             key={mode}
@@ -540,7 +548,7 @@ export default function VerticalProjectScroll() {
             </h1>
           </div>
 
-          <div className="flex flex-wrap gap-2 p-2 text-xs font-quicksand font-light">
+          <div className="hidden lg:flex flex-wrap gap-2 p-2 text-xs font-quicksand font-light">
             {[...TYPE_FILTERS, ...PROGRESS_FILTERS].map((filter) => (
               <button
                 key={filter}
@@ -715,7 +723,7 @@ export default function VerticalProjectScroll() {
       {renderCursor()}
       {renderViewControls()}
 
-      <div className="absolute top-1/2 left-6 -translate-y-1/2 text-xs font-bold font-mono">
+      <div className="hidden absolute lg:block top-1/2 left-6 -translate-y-1/2 text-xs font-bold font-mono">
         [projects]
       </div>
 

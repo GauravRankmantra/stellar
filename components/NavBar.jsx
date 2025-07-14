@@ -1,14 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { motion, useAnimation, useInView } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "@studio-freight/lenis";
+import { motion } from "framer-motion";
+
 import { AnimatePresence } from "framer-motion";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import Link from "next/link";
-import Image from "next/image";
-
 
 const getClosedMenuWidth = () => {
   if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -18,16 +14,15 @@ const getClosedMenuWidth = () => {
   }
 };
 export default function Navbar() {
-  const containerRef = useRef(null);
-  const wrapperRef = useRef(null);
+
   const [closedMenuWidth, setClosedMenuWidth] = useState(getClosedMenuWidth());
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState(false);
-  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 }); // Not currently used, but good to keep if needed
+
   const [isHoveringNav, setIsHoveringNav] = useState(false);
   const cursorSize = isHoveringNav ? "w-16 h-16" : "w-3 h-3";
   const navRef = useRef(null);
-  const footerRef = useRef(null);
+
 
   const [showNav, setShowNav] = useState(true);
 

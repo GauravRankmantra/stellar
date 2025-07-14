@@ -21,7 +21,7 @@ const TeamSection = ({ team }) => {
                 width={500} // Adjust width as needed
                 height={500} // Adjust height as needed
                 objectFit="cover"
-                className="rounded-lg shadow-lg z-[9999]"
+                className="rounded-lg shadow-lg z-[9999] grayscale "
               />
             </div>
 
@@ -33,7 +33,7 @@ const TeamSection = ({ team }) => {
               <p className="text-xl font-medium text-gray-600 mb-4">
                 {member.position}
               </p>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 text-xs leading-relaxed">
                 {member.description}
               </p>
             </div>
