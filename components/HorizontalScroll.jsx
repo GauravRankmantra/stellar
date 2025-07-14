@@ -64,10 +64,9 @@ function Slide({ slide, index }) {
   const isInView = useInView(ref, { amount: 0.3, once: false });
   const gsapCtx = useRef(null);
   const router = useRouter();
-    const [isNavigating, setIsNavigating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
-
-    const cleanupAnimations = useCallback(() => {
+  const cleanupAnimations = useCallback(() => {
     // Kill all ScrollTrigger instances
     ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
 
@@ -338,15 +337,16 @@ export default function HorizontalScroll() {
     if (isNavigating) return;
 
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: isMobile ? 1.8 : 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smooth: true,
-      smoothTouch: true,
-      touchMultiplier: 2,
+      smoothTouch: isMobile,
+      touchMultiplier: isMobile ? 0.8 : 2,
       infinite: false,
       autoResize: true,
       syncTouch: true,
       gestureOrientationM: true,
+      normalizeWheel: true,
     });
 
     lenisRef.current = lenis;
@@ -367,6 +367,14 @@ export default function HorizontalScroll() {
     });
 
     const preventDefault = (e) => {
+      // Don't prevent touch events on interactive elements
+      if (
+        e.target.closest("button") ||
+        e.target.closest("a") ||
+        e.target.closest('[role="button"]')
+      ) {
+        return;
+      }
       if (e.touches && e.touches.length > 1) return;
       e.preventDefault();
     };
@@ -420,9 +428,13 @@ export default function HorizontalScroll() {
           id: "horizontalScroll",
           end: () => `+=${vw * (slidesEls.length - 1)}`,
           snap: {
-            snapTo: 1 / (slidesEls.length - 1),
-            duration: isMobile ? 0.8 : 0.5,
+            snapTo: (progress) => {
+              const slideIndex = Math.round(progress * (slidesEls.length - 1));
+              return slideIndex / (slidesEls.length - 1);
+            },
+            duration: isMobile ? 1.2 : 0.5,
             ease: "power2.out",
+            delay: isMobile ? 0.1 : 0,
           },
           invalidateOnRefresh: true,
         },
@@ -473,6 +485,36 @@ export default function HorizontalScroll() {
     }
   }, [isNavigating]);
 
+  // Add touch-specific button handling
+  useEffect(() => {
+    const navButton = navRef.current?.querySelector("button");
+
+    if (navButton && isMobile) {
+      const handleTouchStart = (e) => {
+        e.stopPropagation();
+      };
+
+      const handleTouchEnd = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!isNavigating) {
+          toggleMenu();
+        }
+      };
+
+      navButton.addEventListener("touchstart", handleTouchStart, {
+        passive: false,
+      });
+      navButton.addEventListener("touchend", handleTouchEnd, {
+        passive: false,
+      });
+
+      return () => {
+        navButton.removeEventListener("touchstart", handleTouchStart);
+        navButton.removeEventListener("touchend", handleTouchEnd);
+      };
+    }
+  }, [isMobile, isNavigating, toggleMenu]);
   // Optimized container variants
   const containerVariants = useMemo(
     () => ({
@@ -569,10 +611,21 @@ export default function HorizontalScroll() {
               </div>
 
               <button
-                onClick={toggleMenu}
+                onClick={!isMobile ? toggleMenu : undefined}
+                onTouchStart={isMobile ? (e) => e.stopPropagation() : undefined}
+                onTouchEnd={
+                  isMobile
+                    ? (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if (!isNavigating) toggleMenu();
+                      }
+                    : undefined
+                }
                 className="group relative w-16 h-16 flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-300 ease-in-out rounded-full hover:bg-white/10"
                 aria-label={isOpen ? "Close menu" : "Open menu"}
                 disabled={isNavigating}
+                style={{ touchAction: "manipulation" }}
               >
                 <div
                   className={`absolute w-14 h-px bg-white transition-all duration-300 ease-in-out ${

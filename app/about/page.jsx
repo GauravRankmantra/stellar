@@ -320,7 +320,7 @@ useEffect(() => {
           </div>
         </div>
         {/* Our Culture */}
-        <div className=" py-20 mt-5">
+        <div className=" py-20 mt-10 md:t-5">
           <h1 className="text-start lg:text-center text-3xl lg:text-5xl w-8/12 lg:mx-auto px-6 -tracking-wider font-gilroy uppercase">
             We constantly search for innovative, strategic, and imaginative
             individuals to enhance our team

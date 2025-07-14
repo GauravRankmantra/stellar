@@ -223,14 +223,14 @@ export default function Navbar() {
 
                   {/* Navigation Links */}
                   <nav className="text-xl md:text-5xl gap-[5rem] font-montserrat grid grid-cols-2 items-center md:gap-[15rem] font-bold z-10">
-                    <a
+                    <Link
                       href="/"
                       className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                       onMouseEnter={() => setIsHoveringNav(true)}
                       onMouseLeave={() => setIsHoveringNav(false)}
                     >
                       HOMEPAGE
-                    </a>
+                    </Link>
                     <Link
                       href="/projects"
                       onClick={(e) => {
@@ -243,22 +243,22 @@ export default function Navbar() {
                     >
                       PROJECTS
                     </Link>
-                    <a
-                      href="#"
+                    <Link
+                      href="/about"
                       className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                       onMouseEnter={() => setIsHoveringNav(true)}
                       onMouseLeave={() => setIsHoveringNav(false)}
                     >
                       ABOUT US
-                    </a>
-                    <a
-                      href="#"
+                    </Link>
+                    <Link
+                      href="/contact"
                       className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                       onMouseEnter={() => setIsHoveringNav(true)}
                       onMouseLeave={() => setIsHoveringNav(false)}
                     >
                       CONTACT
-                    </a>
+                    </Link>
                   </nav>
 
                   {/* Footer contact info and social links */}

@@ -36,7 +36,7 @@ export default function NavbarAbout() {
   const rootVariants = {
     navbar: {
       bottom: "2.5rem", // tailwind bottom-10
-      width: isMobile ? "25%" : "41.666667%", // 3/12 or 5/12
+      width: isMobile ? "80%" : "41.666667%", // 3/12 or 5/12
       height: "80px",
       left: "50%",
       x: "-50%",
@@ -145,12 +145,12 @@ export default function NavbarAbout() {
 
               {/* Navigation Links */}
               <nav className="text-xl md:text-5xl gap-[5rem] font-montserrat grid grid-cols-2 items-center md:gap-[15rem] font-bold z-10">
-                <a
+                <Link
                   href="/"
                   className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                 >
                   HOMEPAGE
-                </a>
+                </Link>
                 <Link
                   href="/projects"
                   onClick={(e) => {
@@ -161,18 +161,18 @@ export default function NavbarAbout() {
                 >
                   PROJECTS
                 </Link>
-                <a
-                  href="#"
+                <Link
+                  href="/about"
                   className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                 >
                   ABOUT US
-                </a>
-                <a
-                  href="#"
+                </Link>
+                <Link
+                  href="/contact"
                   className="block text-gray-400 hover:text-gray-100 transition-colors duration-200"
                 >
                   CONTACT
-                </a>
+                </Link>
               </nav>
 
               {/* Footer contact info and social links */}
@@ -220,7 +220,7 @@ export default function NavbarAbout() {
             // —————— FOOTER MODE ——————
             <motion.div
               key="footer"
-              className="w-full h-full px-8 py-6 flex flex-col md:flex-row justify-between items-center text-xs md:text-sm font-quicksand"
+              className="w-full h-full px-8 py-3 flex flex-col md:flex-row justify-between items-center text-xs md:text-sm font-quicksand"
               variants={contentVariants}
               initial="hidden"
               animate="enter"
