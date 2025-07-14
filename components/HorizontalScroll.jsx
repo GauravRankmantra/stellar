@@ -94,99 +94,99 @@ function Slide({ slide, index, isMobile }) {
     [cleanupAnimations, router]
   );
 
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
+  // useEffect(() => {
+  //   const element = ref.current;
+  //   if (!element) return;
 
-    // Store the context for proper cleanup
-    gsapCtx.current = gsap.context(() => {
-      const image = element.querySelector(".parallax-image");
-      const title = element.querySelector(".slide-title");
-      const meta = element.querySelector(".slide-meta");
+  //   // Store the context for proper cleanup
+  //   gsapCtx.current = gsap.context(() => {
+  //     const image = element.querySelector(".parallax-image");
+  //     const title = element.querySelector(".slide-title");
+  //     const meta = element.querySelector(".slide-meta");
 
-      if (!image || !title || !meta) return;
+  //     if (!image || !title || !meta) return;
 
-      const mainHorizontalScroll = ScrollTrigger.getById("horizontalScroll");
+  //     const mainHorizontalScroll = ScrollTrigger.getById("horizontalScroll");
 
-      if (mainHorizontalScroll) {
-        // Create animations with proper cleanup
-        gsap.to(image, {
-          yPercent: -8,
-          scale: 1.1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: element,
-            containerAnimation: mainHorizontalScroll,
-            start: "left right",
-            end: "right left",
-            scrub: 0.8,
-            id: `slide-image-${index}`,
-          },
-        });
+  //     if (mainHorizontalScroll) {
+  //       // Create animations with proper cleanup
+  //       gsap.to(image, {
+  //         yPercent: -8,
+  //         scale: 1.1,
+  //         ease: "none",
+  //         scrollTrigger: {
+  //           trigger: element,
+  //           containerAnimation: mainHorizontalScroll,
+  //           start: "left right",
+  //           end: "right left",
+  //           scrub: 0.8,
+  //           id: `slide-image-${index}`,
+  //         },
+  //       });
 
-        gsap.to(title, {
-          yPercent: -10,
-          ease: "none",
-          scrollTrigger: {
-            trigger: element,
-            containerAnimation: mainHorizontalScroll,
-            start: "left right",
-            end: "right left",
-            scrub: 1,
-            id: `slide-title-${index}`,
-          },
-        });
+  //       gsap.to(title, {
+  //         yPercent: -10,
+  //         ease: "none",
+  //         scrollTrigger: {
+  //           trigger: element,
+  //           containerAnimation: mainHorizontalScroll,
+  //           start: "left right",
+  //           end: "right left",
+  //           scrub: 1,
+  //           id: `slide-title-${index}`,
+  //         },
+  //       });
 
-        gsap.to(meta.children, {
-          yPercent: -5,
-          ease: "none",
-          scrollTrigger: {
-            trigger: element,
-            containerAnimation: mainHorizontalScroll,
-            start: "left right",
-            end: "right left",
-            scrub: 1.2,
-            id: `slide-meta-${index}`,
-          },
-        });
-      }
-    }, element);
+  //       gsap.to(meta.children, {
+  //         yPercent: -5,
+  //         ease: "none",
+  //         scrollTrigger: {
+  //           trigger: element,
+  //           containerAnimation: mainHorizontalScroll,
+  //           start: "left right",
+  //           end: "right left",
+  //           scrub: 1.2,
+  //           id: `slide-meta-${index}`,
+  //         },
+  //       });
+  //     }
+  //   }, element);
 
-    return () => {
-      if (gsapCtx.current) {
-        gsapCtx.current.revert();
-      }
-    };
-  }, [index]);
+  //   return () => {
+  //     if (gsapCtx.current) {
+  //       gsapCtx.current.revert();
+  //     }
+  //   };
+  // }, [index]);
 
   return (
     <div
       ref={ref}
-      onClick={!isMobile ? () => handleNavigation(`/projects/${slide.slug}`) : undefined}
-      onTouchStart={isMobile ? (e) => {
-        const touch = e.touches[0];
-        e.currentTarget.touchStartX = touch.clientX;
-        e.currentTarget.touchStartY = touch.clientY;
-        e.currentTarget.touchStartTime = Date.now();
-      } : undefined}
-      onTouchEnd={isMobile ? (e) => {
-        const touch = e.changedTouches[0];
-        const startX = e.currentTarget.touchStartX;
-        const startY = e.currentTarget.touchStartY;
-        const startTime = e.currentTarget.touchStartTime;
+      onClick={() => handleNavigation(`/projects/${slide.slug}`)}
+      // onTouchStart={isMobile ? (e) => {
+      //   const touch = e.touches[0];
+      //   e.currentTarget.touchStartX = touch.clientX;
+      //   e.currentTarget.touchStartY = touch.clientY;
+      //   e.currentTarget.touchStartTime = Date.now();
+      // } : undefined}
+      // onTouchEnd={isMobile ? (e) => {
+      //   const touch = e.changedTouches[0];
+      //   const startX = e.currentTarget.touchStartX;
+      //   const startY = e.currentTarget.touchStartY;
+      //   const startTime = e.currentTarget.touchStartTime;
         
-        const deltaX = Math.abs(touch.clientX - startX);
-        const deltaY = Math.abs(touch.clientY - startY);
-        const deltaTime = Date.now() - startTime;
+      //   const deltaX = Math.abs(touch.clientX - startX);
+      //   const deltaY = Math.abs(touch.clientY - startY);
+      //   const deltaTime = Date.now() - startTime;
         
-        if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
-          e.preventDefault();
-          e.stopPropagation();
-          handleNavigation(`/projects/${slide.slug}`);
-        }
-      } : undefined}
+      //   if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
+      //     e.preventDefault();
+      //     e.stopPropagation();
+      //     handleNavigation(`/projects/${slide.slug}`);
+      //   }
+      // } : undefined}
       className="lg:w-screen h-screen flex-shrink-0 relative overflow-hidden"
-      style={{ touchAction: isMobile ? 'pan-x' : 'auto' }}
+      // style={{ touchAction: isMobile ? 'pan-x' : 'auto' }}
     >
       <Image
         src={slide.image}
@@ -357,17 +357,17 @@ export default function HorizontalScroll() {
     if (isNavigating) return;
 
     const lenis = new Lenis({
-      duration: isMobile ? 3.5 : 1.2, // Much slower on mobile
+      duration: isMobile ? 1.2 : 1.2, // Much slower on mobile
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smooth: true,
       smoothTouch: isMobile,
-      touchMultiplier: isMobile ? 0.2 : 2, // Much lower sensitivity on mobile
+      touchMultiplier: isMobile ? 2 : 2, // Much lower sensitivity on mobile
       infinite: false,
       autoResize: true,
       syncTouch: true,
       gestureOrientationM: true,
       normalizeWheel: true,
-      wheelMultiplier: isMobile ? 0.5 : 1, // Slower wheel scrolling on mobile
+      wheelMultiplier: isMobile ? 1 : 1, // Slower wheel scrolling on mobile
     });
     
     lenisRef.current = lenis;
@@ -446,18 +446,18 @@ export default function HorizontalScroll() {
           scrollTrigger: {
             trigger: container,
             pin: true,
-            scrub: 1, // Much slower scrub for mobile
+            scrub: 0.5, // Much slower scrub for mobile
             id: "horizontalScroll",
-            end: () => `+=${vw * (slidesEls.length - 1) * 2}`, // Longer scroll distance
+            end: () => `+=${vw * (slidesEls.length - 1)}`, // Longer scroll distance
             snap: {
               snapTo: (progress) => {
                 const totalSlides = slidesEls.length;
                 const currentSlide = Math.round(progress * (totalSlides - 1));
                 return currentSlide / (totalSlides - 1);
               },
-              duration: 2, // Longer snap duration
+              duration: 0.5, // Longer snap duration
               ease: "power2.out",
-              delay: 0.2,
+              delay: 0.1,
             },
             onUpdate: (self) => {
               const progress = self.progress;
@@ -465,7 +465,7 @@ export default function HorizontalScroll() {
               const targetProgress = slideIndex / (slidesEls.length - 1);
 
               // Enhanced snapping for mobile
-              if (Math.abs(progress - targetProgress) < 0.05) {
+              if (Math.abs(progress - targetProgress) < 0.5) {
                 gsap.to(wrapper, {
                   x: -(vw * slideIndex),
                   duration: 1,
