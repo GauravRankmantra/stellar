@@ -126,7 +126,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "Elite-Clothing-Brand-Store ",
+    slug: "Elite-Clothing-Brand-Store",
     title: "ELISSE ROSSO",
     type: "Commercial",
     progress: "Completed",
@@ -154,7 +154,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "A-Frame-Luxe-BnB ",
+    slug: "A-Frame-Luxe-BnB",
     title: "OFF ROAD BNB",
     type: "Commercial",
     progress: "Completed",
@@ -194,7 +194,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "From-Concept-to-Crumbs ",
+    slug: "From-Concept-to-Crumbs",
     title: "BAKEMASTER",
     type: "Commercial",
     progress: "Completed",
@@ -484,7 +484,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "minimalist-apartment ",
+    slug: "minimalist-apartment",
     title: "pankaj",
     type: "Residential",
     progress: "Under Construction",
@@ -586,7 +586,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "urban-apartment-two ",
+    slug: "urban-apartment-two",
     title: "Mr. Choedak",
     type: "Residential",
     progress: "Under Construction",
@@ -627,7 +627,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "minimalist-villa-one ",
+    slug: "minimalist-villa-one",
     title: "deeplok",
     type: "Residential",
     progress: "Under Construction",
@@ -657,7 +657,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "cityside-apartment ",
+    slug: "cityside-apartment",
     title: "a-408",
     type: "Residential",
     progress: "Under Construction",
@@ -749,7 +749,7 @@ export const originalProjects = [
     ],
   },
   {
-    slug: "premium-villa-retreat ",
+    slug: "premium-villa-retreat",
     title: "sushil",
     type: "Residential",
     progress: "Under Construction",
@@ -762,7 +762,7 @@ export const originalProjects = [
     gallery: ["https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/v1752572514/20250715_1212_Dehradun_Modern_Housefront_remix_01k06d1fxafyy9nys2a6z4vggw_b0idoa.png"],
   },
   {
-    slug: "cosy-apartment ",
+    slug: "cosy-apartment",
     title: "sandeep",
     type: "Residential",
     progress: "Completed",

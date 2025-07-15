@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ProjectDetailClient from "../../../components/ProjectDetailClient";
 
 export async function generateStaticParams() {
+  console.log("Generating static params for:", originalProjects.map(p => p.slug));
   return originalProjects.map((project) => ({
     slug: project.slug,
   }));

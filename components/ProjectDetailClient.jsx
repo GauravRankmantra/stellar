@@ -315,7 +315,7 @@ const ProjectDetailClient = ({ project, nextProject }) => {
                 </div>
               </div>
               {project.description?.map((descText, index) => (
-                <div className="" key={index}>
+                <div className="w-[30rem] p-2" key={index}>
                   {descText}
                 </div>
               ))}
