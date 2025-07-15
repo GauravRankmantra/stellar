@@ -199,7 +199,7 @@ function Slide({ slide, index, isMobile }) {
         quality={85}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/80" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/60" />
 
       <div className="relative z-10 h-full w-full px-6 py-8 lg:px-8 lg:py-8 text-white">
         <motion.h2
