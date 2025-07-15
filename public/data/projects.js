@@ -171,7 +171,7 @@ export const originalProjects = [
   },
   {
     slug: "Tile-Showroom-Facade",
-    title: "CERAMIC ELEGANCE ",
+    title: "CERAMIC ELEGANCE",
     type: "Commercial",
     progress: "Completed",
     location: "Dehradun",
@@ -179,13 +179,13 @@ export const originalProjects = [
     scope: "Facade Design",
     partners: [],
     image:
-      "https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/SHOP_VIEW_10_lfwwon.jpg",
+      "https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/20250715_1205_Ceramic_Studio_Design_remix_01k06ck1jpeh4bdeq9dtkqsp9z_n3xfyf.png",
     description: [
       "Ceramic Elegance is a tile showroom where the fa√ßade speaks louder than signage‚Äîcrafted with precision, luxury, and intention. This project was a fa√ßade-only commission, but its execution demanded full-scale creativity and sensitivity to material and branding. The curvilinear frontage was designed using large-format tiles and integrated lighting, adding subtle drama and sophistication. A key design feature was the use of hexagonal tile patterns to break the monotony and reinforce the showroom‚Äôs core identity‚Äîtiles in motion",
       " Every element, down to the font used for the signage, was selected thoughtfully to maintain brand presence and architectural balance. While minimal in scope, the project was maximal in detail. It‚Äôs a reflection of how even a single layer of design‚Äîwhen done right‚Äîcan redefine perception and experience.",
     ],
     gallery: [
-      "https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/SHOP_VIEW_10_lfwwon.jpg",
+      "https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/20250715_1205_Ceramic_Studio_Design_remix_01k06ck1jpeh4bdeq9dtkqsp9z_n3xfyf.png",
       "https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/20250715_1205_Ceramic_Studio_Design_remix_01k06ck1jpeh4bdeq9dtkqsp9z_n3xfyf.png",
       "https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/20250715_1205_Ceramic_Studio_Design_remix_01k06ck1jnfmktqhjy6z68psvn_hrymlx.png",
       "https://res.cloudinary.com/dqbdfh2ja/image/upload/f_auto,q_auto,w_1200/20250715_1159_Nighttime_Storefront_Elegance_remix_01k06c967cf6tr570skm36a25v_m02rlr.png",
